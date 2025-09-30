@@ -90,24 +90,47 @@ function initializeEventListeners() {
     const fileInput = document.getElementById('fileInput');
     const uploadBox = document.getElementById('uploadBox');
     const searchInput = document.getElementById('searchInput');
+    const processBtn = document.getElementById('processBtn');
 
     // Eventos del input de archivo
-    fileInput.addEventListener('change', handleFileSelect);
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileSelect);
+    }
     
     // Eventos de drag and drop
-    uploadBox.addEventListener('dragover', handleDragOver);
-    uploadBox.addEventListener('dragleave', handleDragLeave);
-    uploadBox.addEventListener('drop', handleFileDrop);
+    if (uploadBox) {
+        uploadBox.addEventListener('dragover', handleDragOver);
+        uploadBox.addEventListener('dragleave', handleDragLeave);
+        uploadBox.addEventListener('drop', handleFileDrop);
+        
+        // Click en upload box para seleccionar archivo
+        uploadBox.addEventListener('click', function() {
+            if (fileInput) fileInput.click();
+        });
+    }
     
     // Evento de búsqueda en tiempo real
-    searchInput.addEventListener('input', debounce(searchProducts, 300));
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(searchProducts, 300));
+        
+        // Evento Enter en búsqueda
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+    }
     
-    // Evento Enter en búsqueda
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchProducts();
-        }
-    });
+    // Event listener para el botón de procesar (backup del onclick)
+    if (processBtn) {
+        processBtn.addEventListener('click', function(e) {
+            // Prevenir doble ejecución si ya tiene onclick
+            if (!e.isTrusted) return;
+            generateSynonyms();
+        });
+    }
+    
+    console.log('✅ Event listeners inicializados correctamente');
 }
 
 // Funciones de manejo de archivos
@@ -195,16 +218,28 @@ function processFile(file) {
 }
 
 function displayPreview() {
+    console.log('📄 Mostrando vista previa del archivo...');
+    
     // Actualizar información del archivo
-    document.getElementById('fileName').textContent = currentFileName;
-    document.getElementById('totalRows').textContent = (excelData.length - 1).toLocaleString();
+    const fileNameEl = document.getElementById('fileName');
+    const totalRowsEl = document.getElementById('totalRows');
+    
+    if (fileNameEl) fileNameEl.textContent = currentFileName;
+    if (totalRowsEl) totalRowsEl.textContent = (excelData.length - 1).toLocaleString();
     
     // Obtener encabezados y datos
     const headers = excelData[0];
     const dataRows = excelData.slice(1, 11); // Mostrar máximo 10 filas de datos
     
+    console.log(`📊 Headers encontrados: ${headers.length}`, headers);
+    
     // Crear encabezados de la tabla
     const headerRow = document.getElementById('previewHeader');
+    if (!headerRow) {
+        console.error('❌ Elemento previewHeader no encontrado');
+        return;
+    }
+    
     headerRow.innerHTML = '';
     
     const headerRowElement = document.createElement('tr');
@@ -213,9 +248,14 @@ function displayPreview() {
         th.textContent = header || `Columna ${index + 1}`;
         th.dataset.columnIndex = index;
         th.title = 'Haz clic para seleccionar como Alias o Descripción';
+        th.style.cursor = 'pointer';
+        th.classList.add('selectable-header');
         
         // Agregar evento de click para selección
-        th.addEventListener('click', () => selectColumn(index, header || `Columna ${index + 1}`, th));
+        th.addEventListener('click', () => {
+            console.log(`👆 Click en columna ${index}: ${header}`);
+            selectColumn(index, header || `Columna ${index + 1}`, th);
+        });
         
         headerRowElement.appendChild(th);
     });
@@ -223,6 +263,11 @@ function displayPreview() {
     
     // Crear filas de datos
     const tbody = document.getElementById('previewBody');
+    if (!tbody) {
+        console.error('❌ Elemento previewBody no encontrado');
+        return;
+    }
+    
     tbody.innerHTML = '';
     
     dataRows.forEach((row, rowIndex) => {
@@ -250,25 +295,51 @@ function displayPreview() {
         tr.appendChild(td);
         tbody.appendChild(tr);
     }
+    
+    // Mostrar la sección de vista previa
+    const previewSection = document.getElementById('previewSection');
+    if (previewSection) {
+        previewSection.style.display = 'block';
+    }
+    
+    // Mostrar controles
+    showControlsSection();
+    
+    // Resetear selecciones previas
+    selectedAliasColumn = null;
+    selectedDescriptionColumn = null;
+    updateProcessButton();
+    
+    console.log('✅ Vista previa mostrada correctamente');
 }
 
 function selectColumn(columnIndex, columnName, headerElement) {
+    console.log(`🔍 Seleccionando columna ${columnIndex}: ${columnName}`);
+    
+    if (!headerElement) {
+        console.error('❌ Header element no encontrado');
+        return;
+    }
+    
     // Determinar qué tipo de columna seleccionar basado en clics previos
     const currentAliasHeader = document.querySelector('.preview-table th.selected-alias');
     const currentDescHeader = document.querySelector('.preview-table th.selected-description');
     
     // Si ya está seleccionada, deseleccionarla
     if (headerElement.classList.contains('selected-alias')) {
+        console.log('🔄 Deseleccionando columna de alias');
         headerElement.classList.remove('selected-alias');
         selectedAliasColumn = null;
         updateSelectedColumnDisplay('alias', null);
     } else if (headerElement.classList.contains('selected-description')) {
+        console.log('🔄 Deseleccionando columna de descripción');
         headerElement.classList.remove('selected-description');
         selectedDescriptionColumn = null;
         updateSelectedColumnDisplay('description', null);
     } else {
         // Lógica de selección inteligente
         if (!currentAliasHeader) {
+            console.log('✅ Seleccionando como columna de ALIAS');
             // Si no hay alias seleccionado, seleccionar como alias
             if (currentDescHeader) currentDescHeader.classList.remove('selected-description');
             headerElement.classList.add('selected-alias');
@@ -277,11 +348,13 @@ function selectColumn(columnIndex, columnName, headerElement) {
             updateSelectedColumnDisplay('alias', columnName);
             updateSelectedColumnDisplay('description', null);
         } else if (!currentDescHeader) {
+            console.log('✅ Seleccionando como columna de DESCRIPCIÓN');
             // Si ya hay alias, seleccionar como descripción
             headerElement.classList.add('selected-description');
             selectedDescriptionColumn = columnIndex;
             updateSelectedColumnDisplay('description', columnName);
         } else {
+            console.log('🔄 Reemplazando columna de ALIAS');
             // Si ambos están seleccionados, reemplazar alias
             currentAliasHeader.classList.remove('selected-alias');
             headerElement.classList.add('selected-alias');
@@ -289,6 +362,8 @@ function selectColumn(columnIndex, columnName, headerElement) {
             updateSelectedColumnDisplay('alias', columnName);
         }
     }
+    
+    console.log(`📊 Estado actual - Alias: ${selectedAliasColumn}, Descripción: ${selectedDescriptionColumn}`);
     
     // Actualizar estado del botón
     updateProcessButton();
@@ -309,14 +384,24 @@ function updateSelectedColumnDisplay(type, columnName) {
 
 function updateProcessButton() {
     const processBtn = document.getElementById('processBtn');
+    
+    if (!processBtn) {
+        console.warn('⚠️ Botón de procesar no encontrado');
+        return;
+    }
+    
     const canProcess = selectedAliasColumn !== null && selectedDescriptionColumn !== null;
     
     processBtn.disabled = !canProcess;
     
     if (canProcess) {
-        processBtn.textContent = 'Generar Sinónimos';
+        processBtn.textContent = '🚀 Generar Sinónimos';
+        processBtn.classList.remove('disabled');
+        console.log('✅ Botón de procesar habilitado');
     } else {
-        processBtn.textContent = 'Selecciona ambas columnas';
+        processBtn.textContent = '📋 Selecciona ambas columnas';
+        processBtn.classList.add('disabled');
+        console.log('⏳ Esperando selección de columnas');
     }
 }
 
@@ -1724,13 +1809,21 @@ window.addEventListener('DOMContentLoaded', function() {
 // ====== FUNCIONES DE INTERFAZ DE MEMORIA ======
 
 function refreshMemoryStats() {
-    const stats = getMemoryStats();
-    
-    document.getElementById('memoryTotalProducts').textContent = stats.totalProducts;
-    document.getElementById('memoryTotalSynonyms').textContent = stats.totalSynonyms;
-    document.getElementById('memorySize').textContent = `${(stats.memorySize / 1024).toFixed(1)} KB`;
-    
-    showStatusMessage('Estadísticas de memoria actualizadas', 'success');
+    try {
+        const stats = getMemoryStats();
+        
+        const totalProductsEl = document.getElementById('memoryTotalProducts');
+        const totalSynonymsEl = document.getElementById('memoryTotalSynonyms');
+        const memorySizeEl = document.getElementById('memorySize');
+        
+        if (totalProductsEl) totalProductsEl.textContent = stats.totalProducts;
+        if (totalSynonymsEl) totalSynonymsEl.textContent = stats.totalSynonyms;
+        if (memorySizeEl) memorySizeEl.textContent = `${(stats.memorySize / 1024).toFixed(1)} KB`;
+        
+        showStatusMessage('Estadísticas de memoria actualizadas', 'success');
+    } catch (error) {
+        console.warn('Error actualizando estadísticas de memoria:', error);
+    }
 }
 
 function showMostUsedProducts() {
