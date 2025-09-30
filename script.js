@@ -21,25 +21,69 @@ const SEARCH_URLS = {
 };
 let webSearchEnabled = true;
 
-// Inicialización de la aplicación
-document.addEventListener('DOMContentLoaded', function() {
-    initializeEventListeners();
-    loadSynonymMemory(); // Cargar memoria de sinónimos
-    // Inicializar todos los servicios automáticamente
-    initializeServices();
+// Inicialización de la aplicación optimizada para GitHub Pages
+function initializeApp() {
+    try {
+        console.log('🚀 Iniciando RISOLU Sinónimos v2.0...');
+        
+        // Verificar que todos los elementos DOM existen
+        const requiredElements = ['fileInput', 'uploadBox', 'webSearchStatus'];
+        const missingElements = requiredElements.filter(id => !document.getElementById(id));
+        
+        if (missingElements.length > 0) {
+            console.warn('⚠️ Elementos DOM faltantes:', missingElements);
+        }
+        
+        initializeEventListeners();
+        loadSynonymMemory(); // Cargar memoria de sinónimos
+        initializeServices(); // Inicializar servicios de búsqueda web
+        
+        console.log('✅ RISOLU iniciado correctamente');
+    } catch (error) {
+        console.error('❌ Error inicializando aplicación:', error);
+    }
+}
+
+// Múltiples puntos de inicialización para máxima compatibilidad
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    // DOM ya está listo
+    initializeApp();
+}
+
+// Respaldo por si DOMContentLoaded no funciona
+window.addEventListener('load', function() {
+    // Solo inicializar si no se ha hecho antes
+    if (!window.risolusInitialized) {
+        window.risolusInitialized = true;
+        initializeApp();
+    }
 });
 
 // Función para inicializar servicios de búsqueda web
 async function initializeServices() {
-    showStatusMessage('Iniciando sistema de búsqueda web...', 'loading');
-    
-    // Cargar configuración de URLs
-    loadUrlConfiguration();
-    
-    // Inicializar estado de búsqueda web
-    updateWebSearchStatus();
-    
-    showStatusMessage('Sistema de búsqueda web listo', 'success');
+    try {
+        showStatusMessage('Iniciando sistema de búsqueda web...', 'loading');
+        console.log('🔧 Inicializando servicios para GitHub Pages...');
+        
+        // Verificar compatibilidad del navegador
+        if (typeof window === 'undefined' || !window.open) {
+            throw new Error('Funciones de búsqueda web no disponibles');
+        }
+        
+        // Cargar configuración de URLs
+        loadUrlConfiguration();
+        
+        // Inicializar estado de búsqueda web
+        updateWebSearchStatus();
+        
+        showStatusMessage('Sistema de búsqueda web listo - GitHub Pages', 'success');
+        console.log('✅ Servicios inicializados correctamente');
+    } catch (error) {
+        console.error('❌ Error inicializando servicios:', error);
+        showStatusMessage('Error en servicios web', 'error');
+    }
 }
 
 function initializeEventListeners() {
@@ -1039,15 +1083,27 @@ function hideLoading() {
 // Cargar memoria de sinónimos desde localStorage
 function loadSynonymMemory() {
     try {
+        // Verificar si localStorage está disponible (puede estar limitado en GitHub Pages)
+        if (typeof(Storage) === "undefined" || !localStorage) {
+            console.warn('⚠️ localStorage no disponible, usando memoria temporal');
+            synonymMemory = new Map();
+            productDatabase = new Map();
+            return;
+        }
+        
         const savedMemory = localStorage.getItem('risolusSynonymMemory');
         if (savedMemory) {
             const parsed = JSON.parse(savedMemory);
             synonymMemory = new Map(parsed.synonyms || []);
             productDatabase = new Map(parsed.products || []);
-            console.log(`Cargados ${synonymMemory.size} sinónimos y ${productDatabase.size} productos de la memoria`);
+            console.log(`📊 Cargados ${synonymMemory.size} sinónimos y ${productDatabase.size} productos de la memoria`);
+        } else {
+            console.log('🆕 Iniciando con memoria nueva');
+            synonymMemory = new Map();
+            productDatabase = new Map();
         }
     } catch (error) {
-        console.warn('Error cargando memoria de sinónimos:', error);
+        console.warn('⚠️ Error cargando memoria de sinónimos:', error);
         synonymMemory = new Map();
         productDatabase = new Map();
     }
@@ -1318,26 +1374,65 @@ function getMemoryStats() {
 
 // Función para búsqueda web directa
 function openWebSearch(productName, searchEngine = 'risolu') {
-    const cleanQuery = encodeURIComponent(productName.trim());
-    const searchUrl = SEARCH_URLS[searchEngine] + cleanQuery;
-    
-    // Abrir en nueva pestaña
-    window.open(searchUrl, '_blank');
-    
-    showStatusMessage(`🔍 Búsqueda iniciada en ${searchEngine.toUpperCase()}`, 'info');
+    try {
+        // Verificar disponibilidad de window.open
+        if (!window.open || typeof window.open !== 'function') {
+            showStatusMessage('❌ Búsqueda web no disponible en este navegador', 'error');
+            return;
+        }
+        
+        const cleanQuery = encodeURIComponent(productName.trim());
+        const searchUrl = SEARCH_URLS[searchEngine] + cleanQuery;
+        
+        // Abrir en nueva pestaña con verificación
+        const newWindow = window.open(searchUrl, '_blank');
+        
+        if (!newWindow) {
+            showStatusMessage('⚠️ Popup bloqueado. Habilita popups para este sitio', 'error');
+        } else {
+            showStatusMessage(`🔍 Búsqueda iniciada en ${searchEngine.toUpperCase()}`, 'info');
+        }
+    } catch (error) {
+        console.error('Error en búsqueda web:', error);
+        showStatusMessage('❌ Error al abrir búsqueda web', 'error');
+    }
 }
 
 // Función para búsqueda múltiple
 function searchInMultipleSites(productName) {
-    const searchEngines = ['risolu', 'grainger', 'amazon', 'mercadolibre'];
-    
-    searchEngines.forEach((engine, index) => {
-        setTimeout(() => {
-            openWebSearch(productName, engine);
-        }, index * 1000); // Retraso de 1 segundo entre cada búsqueda
-    });
-    
-    showStatusMessage(`🚀 Búsqueda iniciada en ${searchEngines.length} sitios`, 'success');
+    try {
+        const searchEngines = ['risolu', 'grainger', 'amazon', 'mercadolibre'];
+        
+        if (!window.open || typeof window.open !== 'function') {
+            showStatusMessage('❌ Búsqueda múltiple no disponible', 'error');
+            return;
+        }
+        
+        let successCount = 0;
+        
+        searchEngines.forEach((engine, index) => {
+            setTimeout(() => {
+                try {
+                    openWebSearch(productName, engine);
+                    successCount++;
+                } catch (error) {
+                    console.warn(`Error en búsqueda ${engine}:`, error);
+                }
+                
+                // Mostrar resultado final
+                if (index === searchEngines.length - 1) {
+                    setTimeout(() => {
+                        showStatusMessage(`🚀 ${successCount}/${searchEngines.length} búsquedas completadas`, 'success');
+                    }, 500);
+                }
+            }, index * 1000); // Retraso de 1 segundo entre cada búsqueda
+        });
+        
+        showStatusMessage(`� Iniciando búsqueda en ${searchEngines.length} sitios...`, 'info');
+    } catch (error) {
+        console.error('Error en búsqueda múltiple:', error);
+        showStatusMessage('❌ Error en búsqueda múltiple', 'error');
+    }
 }
 
 // Actualizar estado de búsqueda web

@@ -5,7 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RISOLU - Generador de Sinónimos para Productos Industriales</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Script de diagnóstico para GitHub Pages -->
+    <script>
+        // Diagnóstico rápido para GitHub Pages
+        window.addEventListener('error', function(e) {
+            console.error('🚨 Error detectado:', e.error || e.message);
+        });
+        
+        // Verificar entorno
+        console.log('🌍 Entorno:', window.location.origin);
+        console.log('📱 User Agent:', navigator.userAgent);
+        console.log('💾 LocalStorage disponible:', typeof(Storage) !== "undefined");
+    </script>
 </head>
 <body>
     <div class="container">
