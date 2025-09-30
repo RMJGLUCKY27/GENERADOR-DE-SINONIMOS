@@ -1796,6 +1796,23 @@ async function restartAPI() {
     }
     
     try {
+        showStatusMessage('Reiniciando API...', 'loading');
+        
+        // Primero detener
+        await stopAPI();
+        
+        // Esperar un momento
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Luego iniciar
+        await startAPI();
+        
+        showStatusMessage('API reiniciada correctamente', 'success');
+        
+    } catch (error) {
+        showStatusMessage(`Error reiniciando API: ${error.message}`, 'error');
+    }
+}
 // ====== INICIALIZACIÓN DEL SISTEMA ======
 
 // Inicializar al cargar la página
@@ -1808,22 +1825,6 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Inicializar estado de búsqueda web
     updateWebSearchStatus();
-    
-    // Mostrar estadísticas de memoria si hay datos
-    const stats = getMemoryStats();
-    if (stats.totalProducts > 0) {
-        showStatusMessage(`📚 Memoria cargada: ${stats.totalProducts} productos, ${stats.totalSynonyms} sinónimos`, 'info');
-    }
-    
-    console.log('Sistema RISOLU Sinónimos v2.0 iniciado correctamente');
-    console.log('Memoria disponible:', stats);
-    console.log('Búsqueda web habilitada:', webSearchEnabled);
-});
-    loadSynonymMemory();
-    
-    // Inicializar verificaciones de API
-    checkApiAvailability();
-    checkControlServer();
     
     // Mostrar estadísticas de memoria si hay datos
     const stats = getMemoryStats();
@@ -1847,7 +1848,7 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Actualizar estadísticas de memoria en la interfaz
     setTimeout(refreshMemoryStats, 1000);
-}
+});
 
 // ====== FUNCIONES DE INTERFAZ DE MEMORIA ======
 
