@@ -1,59 +1,263 @@
-# RISOLU - Generador de Sinónimos para Productos Industriales
+# 🏭 RISOLU - Generador de Sinónimos v2.0
 
-Una aplicación web especializada para RISOLU que permite cargar catálogos de productos industriales y generar automáticamente sinónimos técnicos basados en alias y descripciones, optimizando las búsquedas en sistemas de inventario y e-commerce industrial.
+## 🚀 Sistema Inteligente de Sinónimos para Productos Industriales
 
-## 🏭 Especialización RISOLU
+### 📋 Descripción
+Sistema avanzado para generar sinónimos de productos industriales especializado en **automatización**, **redes industriales** y **equipo eléctrico**. Incluye sistema de **memoria inteligente** con detección de similitud para mantener consistencia en formatos y optimizar el proceso de generación.
 
-Esta aplicación está específicamente optimizada para el catálogo de productos industriales de RISOLU, incluyendo:
+### ⭐ Características Principales
 
-- **Herramientas Manuales y Eléctricas**
-- **Componentes de Fijación** (tornillos, tuercas, arandelas)
-- **Sistemas de Transmisión** (rodamientos, engranes, correas)
-- **Equipos Hidráulicos** (válvulas, bombas, filtros)
-- **Componentes Eléctricos** (contactores, cables, transformadores)
-- **Seguridad Industrial** (cascos, guantes, equipos de protección)
-- **Instrumentación** (manómetros, calibradores, termómetros)
-- **Equipos de Soldadura y Corte**
-- **Lubricantes y Selladores**
+#### 🧠 Sistema de Memoria Inteligente (NUEVO v2.0)
+- **Almacenamiento automático** de productos procesados
+- **Detección de similitud** usando algoritmo de Jaccard
+- **Sugerencias inteligentes** para productos similares
+- **Umbral configurable** de similitud (0.1 - 1.0)
+- **Persistencia local** usando localStorage
 
-## 🚀 Características Principales
+#### 📊 Procesamiento de Excel
+- Carga y visualización de archivos Excel (.xlsx, .xls, .csv)
+- Vista previa interactiva con selección de columnas
+- Procesamiento masivo de productos
+- Exportación en múltiples formatos
 
-- **Carga de Archivos**: Soporte para Excel (.xlsx, .xls) y CSV
-- **Generación Automática de Sinónimos**: Basado en un diccionario industrial en español
-- **Búsqueda Inteligente**: Búsqueda en tiempo real con filtros
-- **Exportación**: Descarga resultados en Excel o CSV
-- **Estadísticas**: Visualización de métricas de procesamiento
-- **Diseño Responsivo**: Funciona en desktop y móvil
+#### 🔍 API de Búsqueda Web
+- Integración con web scraping para búsqueda en RISOLU
+- Generación de sinónimos potenciados por IA
+- Control completo de API desde la interfaz
+- Sistema de auto-inicio con bootstrap
 
-## 📋 Cómo Usar
+#### 💾 Gestión de Base de Datos
+- **Exportación** completa en JSON, CSV, Excel
+- **Importación** de bases de datos existentes
+- **Estadísticas detalladas** de uso
+- **Productos más utilizados**
+- **Limpieza de memoria** con confirmación
 
-### 1. Cargar Archivo
-- Arrastra y suelta un archivo Excel o CSV en la zona de carga
-- O haz clic en "Selecciona un archivo" para elegir desde tu dispositivo
-- El archivo debe contener al menos columnas con alias y descripciones de productos
+### 🛠️ Especialización RISOLU
 
-### 2. Configurar Columnas
-- Selecciona la columna que contiene los **alias** de los productos
-- Selecciona la columna que contiene las **descripciones** de los productos
-- Haz clic en "Generar Sinónimos"
+#### Categorías de Productos:
+- **Automatización**: PLCs Allen Bradley, HMIs, Variadores, Servos
+- **Redes Industriales**: Switches Cisco/Stratix, Cables Belden, Gateways
+- **Equipo Eléctrico**: Gabinetes Hoffman, Breakers Eaton, UPS
+- **Instrumentación**: Multímetros Fluke, Transmisores, Barreras
+- **Seguridad Industrial**: Brady (LOTO), EPP, Etiquetas
+- **Conectividad**: Phoenix Contact, Regletas, Conectores
 
-### 3. Revisar Resultados
-- Visualiza los sinónimos generados para cada producto
-- Usa la barra de búsqueda para filtrar resultados
-- Activa/desactiva filtros de búsqueda según necesites
+#### Marcas Integradas:
+- Allen Bradley / Rockwell Automation
+- Cisco Industrial Networks
+- Eaton Electrical
+- Fluke Corporation
+- Hoffman Enclosures
+- Brady Safety
+- Belden Cables
+- Phoenix Contact
 
-### 4. Exportar Datos
-- Descarga los resultados en formato Excel o CSV
-- Los sinónimos se incluyen en columnas separadas para fácil integración
+### 🚀 Inicio Rápido
 
-## 🔧 Funcionalidades Técnicas
+#### 1. Clonar Repositorio
+```bash
+git clone https://github.com/RMJGLUCKY27/GENERADOR-DE-SINONIMOS.git
+cd GENERADOR-DE-SINONIMOS
+```
 
-### Generación de Sinónimos
+#### 2. Instalar Dependencias
+```bash
+npm install
+```
 
-La aplicación utiliza varias técnicas para generar sinónimos:
+#### 3. Configurar API (Opcional)
+```bash
+cd api
+npm install
+cp .env.example .env
+# Editar configuraciones en .env
+```
 
-1. **Diccionario Industrial**: Base de datos con términos técnicos y sus equivalentes
-2. **Variaciones Morfológicas**: Plural/singular, con/sin acentos
+#### 4. Iniciar Sistema
+```bash
+# Opción 1: Sistema completo con auto-inicio
+npm start
+
+# Opción 2: Solo frontend
+npx http-server . -p 3000
+
+# Opción 3: Solo API
+cd api && npm start
+```
+
+#### 5. Acceder a la Aplicación
+- **Frontend**: http://localhost:3000
+- **API**: http://localhost:3001
+- **Bootstrap**: http://localhost:3002
+
+### 📁 Estructura del Proyecto
+
+```
+GENERADOR-DE-SINONIMOS/
+├── 📄 index.html              # Interfaz principal
+├── 🎨 styles.css             # Estilos responsivos
+├── ⚡ script.js              # Lógica principal + memoria
+├── 🔧 bootstrap.js           # Auto-inicio de servicios
+├── 🎛️ api-control.js         # Control de API desde frontend
+├── 🚀 startup.html           # Página de inicio visual
+├── 📦 package.json           # Dependencias del proyecto
+├── api/
+│   ├── 🌐 index.js           # Servidor API con scraping
+│   ├── 📦 package.json       # Dependencias API
+│   └── ⚙️ .env.example       # Configuración de ejemplo
+├── 📊 ejemplo_productos_*.csv # Datos de ejemplo
+├── 📚 catalogo_completo_RISOLU.csv
+└── 📖 README.md              # Esta documentación
+```
+
+### 🧪 Uso del Sistema
+
+#### 1. Cargar Archivo Excel
+1. Arrastra un archivo Excel o CSV a la zona de carga
+2. Visualiza la vista previa de datos
+3. Selecciona columnas de **Alias** y **Descripción**
+4. Haz clic en **"Generar Sinónimos"**
+
+#### 2. Sistema de Memoria Inteligente
+- **Primera vez**: Genera sinónimos y los guarda automáticamente
+- **Coincidencia exacta**: Recupera sinónimos instantáneamente  
+- **Producto similar**: Sugiere sinónimos de productos con >70% similitud
+- **Configuración**: Ajusta umbral de similitud según necesidades
+
+#### 3. Gestión de Base de Datos
+- **Ver estadísticas**: Productos en memoria, sinónimos totales, tamaño
+- **Exportar**: Descargar base completa en JSON/CSV/Excel
+- **Importar**: Cargar base de datos existente
+- **Limpiar**: Resetear memoria completamente
+
+#### 4. API de Búsqueda (Opcional)
+- Inicia API para búsquedas web en RISOLU
+- Genera sinónimos potenciados por IA
+- Control completo desde la interfaz
+
+### � Configuración Avanzada
+
+#### Umbral de Similitud
+- **0.9-1.0**: Solo productos muy similares (más restrictivo)
+- **0.7-0.8**: Balance recomendado (default: 0.7)
+- **0.1-0.6**: Mayor flexibilidad, más sugerencias
+
+#### Variables de Entorno API
+```bash
+PORT=3001                    # Puerto de la API
+SCRAPING_DELAY=2000         # Delay entre requests (ms)
+MAX_RESULTS=50              # Máximo resultados por búsqueda
+USER_AGENT="Mozilla/5.0..." # User agent para scraping
+```
+
+### 📊 Ejemplos de Uso
+
+#### Producto Industrial Típico:
+```
+Alias: "MTR-001"
+Descripción: "Martillo profesional 16oz mango fibra"
+
+Sinónimos generados:
+- martillo, hammer, tool, herramienta
+- profesional, commercial, heavy duty
+- 16oz, 450g, weight, peso
+- mango, handle, grip, agarre
+- fibra, fiber, composite, material
+```
+
+#### Código RISOLU:
+```
+Alias: "RSL-PLC-001"
+Descripción: "Controlador Allen Bradley CompactLogix"
+
+Sinónimos generados:
+- plc, controlador, programmable logic controller
+- allen bradley, rockwell, automation
+- compactlogix, 1769, l24er, processor
+- industrial, control, sistema, automation
+```
+
+### 🔍 API Endpoints
+
+```javascript
+// Búsqueda en RISOLU
+GET /api/buscar?q=martillo&categoria=herramientas
+
+// Generar sinónimos IA
+POST /api/sinonimos
+{
+  "alias": "MTR-001", 
+  "descripcion": "Martillo profesional"
+}
+
+// Estado del servidor
+GET /api/status
+```
+
+### 📈 Estadísticas y Métricas
+
+El sistema rastrea automáticamente:
+- **Productos procesados**: Total de elementos únicos
+- **Sinónimos generados**: Cantidad total de variaciones
+- **Uso de memoria**: Frecuencia de uso por producto
+- **Eficiencia**: Ratio de coincidencias vs. generaciones nuevas
+- **Tamaño de base**: Ocupación en localStorage
+
+### 🛡️ Características de Seguridad
+
+- **Validación de entrada**: Sanitización de datos Excel/CSV
+- **Rate limiting**: Control de velocidad en API
+- **CORS configurado**: Acceso controlado desde frontend
+- **Backup automático**: Persistencia en localStorage
+- **Confirmación de borrado**: Protección contra pérdida de datos
+
+### 🌐 Compatibilidad
+
+- **Navegadores**: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+- **Archivos**: Excel (.xlsx/.xls), CSV, JSON
+- **Sistemas**: Windows, macOS, Linux
+- **Node.js**: 14+ (para API)
+
+### 🤝 Contribuir
+
+1. Fork el repositorio
+2. Crea una rama feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit cambios (`git commit -am 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Crear Pull Request
+
+### 📝 Changelog
+
+#### v2.0.0 (Actual)
+- ✅ **Sistema de memoria inteligente** con localStorage
+- ✅ **Detección de similitud** usando algoritmo de Jaccard
+- ✅ **Interfaz de gestión** completa para base de datos
+- ✅ **Exportación/Importación** en múltiples formatos
+- ✅ **Umbral configurable** de similitud
+- ✅ **Estadísticas detalladas** de uso y rendimiento
+
+#### v1.0.0
+- ✅ Generación básica de sinónimos
+- ✅ Integración con API de scraping
+- ✅ Interfaz responsiva
+- ✅ Sistema de auto-inicio
+
+### 📞 Soporte
+
+- **GitHub Issues**: [Reportar problemas](https://github.com/RMJGLUCKY27/GENERADOR-DE-SINONIMOS/issues)
+- **Documentación**: Ver archivos README en `/api/` y `/docs/`
+- **Email**: [Contacto directo]
+
+### 📄 Licencia
+
+MIT License - Ver archivo `LICENSE` para más detalles.
+
+---
+
+**Desarrollado con ❤️ para RISOLU - Especialistas en Automatización Industrial**
+
+🔧 *Versión 2.0 - Sistema Inteligente con Memoria y Detección de Similitud*
 3. **Abreviaciones**: Formas cortas de palabras técnicas
 4. **Extracción de Medidas**: Números con unidades (mm, cm, kg, etc.)
 5. **Códigos de Producto**: Identificación de patrones alfanuméricos
