@@ -13,17 +13,17 @@
             <h1>🏭 RISOLU - Generador de Sinónimos</h1>
             <p>Optimiza la búsqueda de productos industriales con sinónimos inteligentes</p>
             <small>Especializado en Automatización, Redes Industriales y Equipo Eléctrico</small>
-            <div class="api-status-container">
-                <div class="api-control-panel">
-                    <span id="apiStatus" class="api-status connected">Búsqueda Web Activa 🌐</span>
-                    <div class="api-controls">
-                        <button id="toggleWebSearchBtn" class="btn-api-control start" onclick="toggleWebSearch()">
+            <div class="web-status-container">
+                <div class="web-control-panel">
+                    <span id="webSearchStatus" class="web-status connected">Búsqueda Web Activa 🌐</span>
+                    <div class="web-controls">
+                        <button id="toggleWebSearchBtn" class="btn-web-control start" onclick="toggleWebSearch()">
                             🔄 Alternar Búsqueda
                         </button>
-                        <button id="configureUrlsBtn" class="btn-api-control stop" onclick="configureSearchUrls()">
+                        <button id="configureUrlsBtn" class="btn-web-control config" onclick="configureSearchUrls()">
                             ⚙️ Configurar URLs
                         </button>
-                        <button id="testSearchBtn" class="btn-api-control restart" onclick="searchInMultipleSites('test martillo')">
+                        <button id="testSearchBtn" class="btn-web-control test" onclick="searchInMultipleSites('test martillo')">
                             🧪 Probar Búsqueda
                         </button>
                     </div>

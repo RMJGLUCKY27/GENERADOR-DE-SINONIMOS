@@ -29,25 +29,17 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeServices();
 });
 
-// Función para inicializar todos los servicios automáticamente
+// Función para inicializar servicios de búsqueda web
 async function initializeServices() {
-    showStatusMessage('Inicializando servicios...', 'loading');
+    showStatusMessage('Iniciando sistema de búsqueda web...', 'loading');
     
-    // Primero, intentar iniciar el servidor de control si no está disponible
-    await ensureControlServerRunning();
+    // Cargar configuración de URLs
+    loadUrlConfiguration();
     
-    // Luego verificar el servidor de control
-    await checkControlServerAvailability();
+    // Inicializar estado de búsqueda web
+    updateWebSearchStatus();
     
-    // Finalmente verificar/iniciar la API
-    await checkApiAvailability();
-    
-    // Si la API no está disponible pero el control sí, intenta arrancarla automáticamente
-    if (!apiAvailable && controlServerAvailable && !autoStartAttempted) {
-        autoStartAttempted = true;
-        showStatusMessage('API inactiva, iniciando automáticamente...', 'loading');
-        await startAPI();
-    }
+    showStatusMessage('Sistema de búsqueda web listo', 'success');
 }
 
 function initializeEventListeners() {
@@ -881,13 +873,13 @@ function displayResults(data) {
                 ${item.keywords.map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join('')}
             </td>
             <td>
-                <div class="api-actions">
-                    <button class="btn-api" onclick="searchProductInRisolu('${escapeHtml(item.alias)}')" 
+                <div class="web-actions">
+                    <button class="btn-web" onclick="searchProductInRisolu('${escapeHtml(item.alias)}')"
                             ${!webSearchEnabled ? 'disabled' : ''}>
                         🔍 Buscar Web
                     </button>
-                    <button class="btn-api" onclick="generateEnhancedSynonyms(${index})">
-                        ⚡ Sinónimos IA
+                    <button class="btn-enhance" onclick="generateEnhancedSynonyms(${index})">
+                        ⚡ Mejorar Sinónimos
                     </button>
                 </div>
             </td>
@@ -1350,14 +1342,16 @@ function searchInMultipleSites(productName) {
 
 // Actualizar estado de búsqueda web
 function updateWebSearchStatus() {
-    const apiStatus = document.getElementById('apiStatus');
+    const webStatus = document.getElementById('webSearchStatus');
     
-    if (webSearchEnabled) {
-        apiStatus.textContent = 'Búsqueda Web Activa 🌐';
-        apiStatus.className = 'api-status connected';
-    } else {
-        apiStatus.textContent = 'Búsqueda Web Desactivada ❌';
-        apiStatus.className = 'api-status disconnected';
+    if (webStatus) {
+        if (webSearchEnabled) {
+            webStatus.textContent = 'Búsqueda Web Activa 🌐';
+            webStatus.className = 'web-status connected';
+        } else {
+            webStatus.textContent = 'Búsqueda Web Desactivada ❌';
+            webStatus.className = 'web-status disconnected';
+        }
     }
 }
 
@@ -1454,93 +1448,12 @@ function generateContextualSynonyms(alias, description) {
     return Array.from(contextTerms);
 }
 
-// ====== FUNCIONES ESPECÍFICAS PARA BOTONES DE API ======
+// ====== FUNCIONES DE BÚSQUEDA WEB SIMPLIFICADA ======
 
-// Buscar un producto específico en RISOLU
-async function searchProductInRisolu(query) {
-    if (!apiAvailable) {
-        showStatusMessage('API no disponible', 'error');
-        return;
-    }
-    
-    try {
-        showStatusMessage(`Buscando "${query}" en RISOLU...`, 'loading');
-        
-        const productos = await searchProductsAPI(query);
-        
-        if (productos.length > 0) {
-            displayRisolusProducts(productos);
-            showStatusMessage(`Se encontraron ${productos.length} productos en RISOLU`, 'success');
-        } else {
-            showStatusMessage('No se encontraron productos en RISOLU', 'warning');
-        }
-        
-    } catch (error) {
-        showStatusMessage(`Error al buscar en RISOLU: ${error.message}`, 'error');
-    }
-}
+// Generar sinónimos mejorados usando lógica local (ya implementada antes)
+// Esta función ya existe más arriba con el mismo nombre, eliminando duplicado
 
-// Generar sinónimos mejorados para un producto específico
-async function generateEnhancedSynonyms(productIndex) {
-    if (!apiAvailable) {
-        showStatusMessage('API no disponible', 'error');
-        return;
-    }
-    
-    if (!processedData[productIndex]) {
-        showStatusMessage('Producto no encontrado', 'error');
-        return;
-    }
-    
-    const product = processedData[productIndex];
-    
-    try {
-        showStatusMessage('Generando sinónimos avanzados...', 'loading');
-        
-        const enhancedSynonyms = await generateSynonymsAPI(product.alias, product.description);
-        
-        // Actualizar sinónimos del producto
-        const allSynonyms = [...new Set([...product.synonyms, ...enhancedSynonyms])];
-        processedData[productIndex].synonyms = allSynonyms;
-        
-        // Actualizar la visualización
-        displayResults(processedData);
-        showStatusMessage(`Se generaron ${enhancedSynonyms.length} sinónimos adicionales`, 'success');
-        
-    } catch (error) {
-        showStatusMessage(`Error generando sinónimos: ${error.message}`, 'error');
-    }
-}
-
-// Mostrar productos de RISOLU
-function displayRisolusProducts(productos) {
-    const container = document.getElementById('risolusContainer');
-    const section = document.getElementById('risolusSection');
-    
-    container.innerHTML = '';
-    
-    if (productos.length === 0) {
-        container.innerHTML = '<p>No se encontraron productos.</p>';
-        return;
-    }
-    
-    productos.forEach(producto => {
-        const card = document.createElement('div');
-        card.className = 'risolu-product-card';
-        
-        card.innerHTML = `
-            <div class="risolu-product-name">${escapeHtml(producto.nombre)}</div>
-            <div class="risolu-product-price">${escapeHtml(producto.precio || 'Precio no disponible')}</div>
-            <a href="${escapeHtml(producto.url)}" target="_blank" class="risolu-product-link">
-                Ver en RISOLU 🔗
-            </a>
-        `;
-        
-        container.appendChild(card);
-    });
-    
-    section.style.display = 'block';
-}
+// Función displayRisolusProducts eliminada - ahora usamos búsqueda web directa
 
 // Mostrar mensajes de estado
 function showStatusMessage(message, type = 'info') {
@@ -1576,24 +1489,7 @@ function showStatusMessage(message, type = 'info') {
     }
 }
 
-// Función auxiliar para buscar productos locales (para compatibilidad)
-function searchLocalProducts(query) {
-    const searchTerm = query.toLowerCase().trim();
-    
-    if (!searchTerm || !processedData) {
-        return [];
-    }
-    
-    return processedData.filter(item => {
-        const searchTermNormalized = removeAccents(searchTerm);
-        
-        return (
-            removeAccents(item.alias.toLowerCase()).includes(searchTermNormalized) ||
-            removeAccents(item.description.toLowerCase()).includes(searchTermNormalized) ||
-            item.synonyms.some(syn => removeAccents(syn.toLowerCase()).includes(searchTermNormalized))
-        );
-    });
-}
+// Función searchLocalProducts eliminada - funcionalidad integrada en searchProducts
 
 // ====== FUNCIONES DE CONTROL DE BÚSQUEDA WEB ======
 
@@ -1690,129 +1586,9 @@ function loadUrlConfiguration() {
     }
 }
 
-// Actualizar estado de la API en base a la respuesta del servidor de control
-function updateApiControlStatus(statusData) {
-    const statusElement = document.getElementById('apiStatus');
-    const startBtn = document.getElementById('startApiBtn');
-    const stopBtn = document.getElementById('stopApiBtn');
-    
-    if (statusData.running) {
-        statusElement.textContent = `API Activa (PID: ${statusData.pid})`;
-        statusElement.className = 'api-status connected';
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-        apiAvailable = true;
-    } else {
-        statusElement.textContent = 'API Inactiva';
-        statusElement.className = 'api-status disconnected';
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-        apiAvailable = false;
-    }
-    
-    // Mostrar errores si existen
-    if (statusData.errors && statusData.errors.length > 0) {
-        const lastError = statusData.errors[statusData.errors.length - 1];
-        showStatusMessage(`Error en API: ${lastError}`, 'error');
-    }
-}
+// Funciones de API eliminadas - ahora usamos búsqueda web directa
 
-// Iniciar la API
-async function startAPI() {
-    if (!controlServerAvailable) {
-        showStatusMessage('Servidor de control no disponible', 'error');
-        return;
-    }
-    
-    try {
-        showStatusMessage('Iniciando API...', 'loading');
-        
-        const response = await fetch(`${API_CONTROL_URL}/api/start`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showStatusMessage('API iniciada correctamente', 'success');
-            updateApiControlStatus(data.status);
-            
-            // Re-verificar disponibilidad después de un momento
-            setTimeout(() => {
-                checkApiAvailability();
-            }, 3000);
-        } else {
-            throw new Error(data.error || 'Error desconocido');
-        }
-        
-    } catch (error) {
-        showStatusMessage(`Error iniciando API: ${error.message}`, 'error');
-    }
-}
-
-// Detener la API
-async function stopAPI() {
-    if (!controlServerAvailable) {
-        showStatusMessage('Servidor de control no disponible', 'error');
-        return;
-    }
-    
-    try {
-        showStatusMessage('Deteniendo API...', 'loading');
-        
-        const response = await fetch(`${API_CONTROL_URL}/api/stop`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showStatusMessage('API detenida correctamente', 'success');
-            updateApiControlStatus(data.status);
-            
-            // Actualizar disponibilidad
-            apiAvailable = false;
-            updateApiStatus(false);
-        } else {
-            throw new Error(data.error || 'Error desconocido');
-        }
-        
-    } catch (error) {
-        showStatusMessage(`Error deteniendo API: ${error.message}`, 'error');
-    }
-}
-
-// Reiniciar la API
-async function restartAPI() {
-    if (!controlServerAvailable) {
-        showStatusMessage('Servidor de control no disponible', 'error');
-        return;
-    }
-    
-    try {
-        showStatusMessage('Reiniciando API...', 'loading');
-        
-        // Primero detener
-        await stopAPI();
-        
-        // Esperar un momento
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Luego iniciar
-        await startAPI();
-        
-        showStatusMessage('API reiniciada correctamente', 'success');
-        
-    } catch (error) {
-        showStatusMessage(`Error reiniciando API: ${error.message}`, 'error');
-    }
-}
+// Funciones de control de API eliminadas - sistema ahora usa búsqueda web directa
 // ====== INICIALIZACIÓN DEL SISTEMA ======
 
 // Inicializar al cargar la página
