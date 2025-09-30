@@ -1,0 +1,31 @@
+{
+  "name": "risolu-control",
+  "version": "1.0.0",
+  "description": "Control de API para Generador de Sinónimos RISOLU",
+  "main": "api-control.js",
+  "scripts": {
+    "start": "node bootstrap.js",
+    "dev": "nodemon bootstrap.js",
+    "control": "node api-control.js",
+    "api": "cd api && node index.js",
+    "web": "python -m http.server 8000",
+    "all": "concurrently \"npm run start\" \"npm run web\"",
+    "full": "npm run start"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.10"
+  },
+  "keywords": [
+    "risolu",
+    "api-control",
+    "synonyms",
+    "industrial"
+  ],
+  "author": "RISOLU",
+  "license": "MIT"
+}

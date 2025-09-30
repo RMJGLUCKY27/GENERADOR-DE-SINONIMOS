@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISOLU - Iniciando Servicios</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            color: white;
+        }
+        
+        .startup-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .status-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            font-size: 1.5em;
+        }
+        
+        .loading {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .loading-text { color: #ffc107; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .redirect-info {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(40, 167, 69, 0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="startup-container">
+        <h1>🏭 RISOLU</h1>
+        <p>Iniciando servicios automáticamente...</p>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        
+        <div id="statusContainer">
+            <div class="status-item">
+                <span>Bootstrap Server (3003)</span>
+                <span class="status-indicator loading" id="bootstrapStatus">⏳</span>
+            </div>
+            <div class="status-item">
+                <span>Servidor de Control (3002)</span>
+                <span class="status-indicator loading" id="controlStatus">⏳</span>
+            </div>
+            <div class="status-item">
+                <span>API RISOLU (3001)</span>
+                <span class="status-indicator loading" id="apiStatus">⏳</span>
+            </div>
+            <div class="status-item">
+                <span>Servidor Web (8000)</span>
+                <span class="status-indicator loading" id="webStatus">⏳</span>
+            </div>
+        </div>
+        
+        <div id="redirectInfo" class="redirect-info" style="display: none;">
+            <h3>✅ Todos los servicios están activos</h3>
+            <p>Redirigiendo a la aplicación principal...</p>
+            <p><strong>URL:</strong> <a href="http://localhost:8000" target="_blank">http://localhost:8000</a></p>
+        </div>
+    </div>
+
+    <script>
+        let progress = 0;
+        let servicesReady = 0;
+        const totalServices = 4;
+        
+        // Actualizar barra de progreso
+        function updateProgress(increment = 25) {
+            progress += increment;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+        
+        // Actualizar estado de servicio
+        function updateServiceStatus(serviceId, status, icon) {
+            const element = document.getElementById(serviceId);
+            element.textContent = icon;
+            element.className = `status-indicator ${status}`;
+            
+            if (status === 'success') {
+                servicesReady++;
+                updateProgress();
+                
+                if (servicesReady === totalServices) {
+                    showRedirectInfo();
+                }
+            }
+        }
+        
+        // Mostrar información de redirección
+        function showRedirectInfo() {
+            document.getElementById('redirectInfo').style.display = 'block';
+            
+            // Redirigir después de 3 segundos
+            setTimeout(() => {
+                window.location.href = 'http://localhost:8000';
+            }, 3000);
+        }
+        
+        // Verificar Bootstrap Server
+        async function checkBootstrap() {
+            try {
+                const response = await fetch('http://localhost:3003/status');
+                if (response.ok) {
+                    updateServiceStatus('bootstrapStatus', 'success', '✅');
+                    return true;
+                }
+            } catch (error) {
+                updateServiceStatus('bootstrapStatus', 'error', '❌');
+                return false;
+            }
+        }
+        
+        // Iniciar servidor de control
+        async function startControlServer() {
+            try {
+                const response = await fetch('http://localhost:3003/start-control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    updateServiceStatus('controlStatus', 'success', '✅');
+                    return true;
+                }
+            } catch (error) {
+                updateServiceStatus('controlStatus', 'error', '❌');
+                return false;
+            }
+        }
+        
+        // Verificar API
+        async function checkAPI() {
+            try {
+                // Esperar un poco para que la API inicie
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const response = await fetch('http://localhost:3001/sinonimos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alias: 'test', descripcion: 'test' })
+                });
+                
+                if (response.ok) {
+                    updateServiceStatus('apiStatus', 'success', '✅');
+                    return true;
+                }
+            } catch (error) {
+                // Si la API no está disponible, intentar iniciarla via control
+                try {
+                    const startResponse = await fetch('http://localhost:3002/api/start', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (startResponse.ok) {
+                        // Esperar y verificar nuevamente
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        return await checkAPI();
+                    }
+                } catch (controlError) {
+                    updateServiceStatus('apiStatus', 'error', '❌');
+                    return false;
+                }
+            }
+        }
+        
+        // Verificar servidor web
+        async function checkWebServer() {
+            try {
+                const response = await fetch('http://localhost:8000');
+                if (response.ok) {
+                    updateServiceStatus('webStatus', 'success', '✅');
+                    return true;
+                }
+            } catch (error) {
+                updateServiceStatus('webStatus', 'error', '❌');
+                return false;
+            }
+        }
+        
+        // Secuencia de inicio
+        async function startupSequence() {
+            // 1. Verificar Bootstrap
+            const bootstrapOk = await checkBootstrap();
+            if (!bootstrapOk) {
+                document.getElementById('redirectInfo').innerHTML = `
+                    <h3>⚠️ Error de Inicio</h3>
+                    <p>No se pudo conectar al Bootstrap Server.</p>
+                    <p>Inicia manualmente: <code>npm run start</code></p>
+                `;
+                document.getElementById('redirectInfo').style.display = 'block';
+                return;
+            }
+            
+            // 2. Iniciar servidor de control
+            await startControlServer();
+            
+            // 3. Verificar/iniciar API
+            await checkAPI();
+            
+            // 4. Verificar servidor web
+            await checkWebServer();
+        }
+        
+        // Iniciar cuando cargue la página
+        window.addEventListener('load', () => {
+            setTimeout(startupSequence, 1000);
+        });
+    </script>
+</body>
+</html>

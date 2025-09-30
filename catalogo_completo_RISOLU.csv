@@ -1,0 +1,40 @@
+Código,Alias,Descripción Corta,Categoría,Marca,Precio
+RSL-PLC-001,ControlLogix PLC,Allen Bradley ControlLogix 1756-L73 procesador,Automatización,Allen Bradley,2850.00
+RSL-HMI-002,PanelView Plus,Allen Bradley PanelView Plus 7 15 pulgadas,Automatización,Allen Bradley,1650.00
+RSL-VFD-003,PowerFlex 525,Allen Bradley PowerFlex 525 5HP 480V,Automatización,Allen Bradley,1250.00
+RSL-SEN-004,Sensor Fotoeléctrico,Allen Bradley 42GRU-9202-QD sensor retro-reflexivo,Automatización,Allen Bradley,185.50
+RSL-ENC-005,Encoder Incremental,Allen Bradley 845T-CZ1A encoder incremental 1024ppr,Automatización,Allen Bradley,425.80
+RSL-SRV-006,Kinetix Servo,Allen Bradley Kinetix 5700 servo drive 2kW,Automatización,Allen Bradley,1850.00
+RSL-SW1-007,Switch Industrial,Cisco IE-1000-4T2A switch ethernet industrial,Redes Industriales,Cisco,580.00
+RSL-SW2-008,Stratix 5700,Allen Bradley Stratix 5700 switch gestionado,Redes Industriales,Allen Bradley,950.00
+RSL-CBL-009,Cable Ethernet,Belden 1585E Cat6A cable ethernet industrial,Redes Industriales,Belden,45.60
+RSL-GW1-010,Gateway Modbus,Red Lion N-Tron gateway modbus a ethernet,Redes Industriales,Red Lion,680.00
+RSL-GAB-011,Gabinete NEMA 4X,Hoffman A36H3612SSFSN gabinete acero inoxidable,Equipo Eléctrico,Hoffman,1250.00
+RSL-BRK-012,Breaker 3P 100A,Eaton HFD3100 interruptor termomagnético 100A,Equipo Eléctrico,Eaton,285.00
+RSL-CNT-013,Contactor 3P 25A,Square D 8910DPA23V09 contactor 25A 120V,Equipo Eléctrico,Square D,125.60
+RSL-UPS-014,UPS 5kVA Online,Eaton 9PX5K UPS online doble conversión,Equipo Eléctrico,Eaton,2850.00
+RSL-TRF-015,Transformador 15kVA,Square D 15T3H transformador trifásico,Equipo Eléctrico,Square D,1680.00
+RSL-MED-016,Multímetro Digital,Fluke 87V multímetro industrial true RMS,Instrumentación,Fluke,485.00
+RSL-TER-017,Cámara Termográfica,Fluke Ti401 PRO cámara termográfica 640x480,Instrumentación,Fluke,8500.00
+RSL-CAL-018,Calibrador Proceso,Fluke 754 calibrador documenting process,Instrumentación,Fluke,3250.00
+RSL-CBL-020,Cable Control,Belden 9501 cable control 18AWG 4 conductores,Cables y Canalizaciones,Belden,12.80
+RSL-FIB-021,Cable Fibra Óptica,Belden 10GXS02.002 cable fibra OM4 duplex,Cables y Canalizaciones,Belden,85.40
+RSL-CON-022,Conector RJ45,Belden AX101315 conector modular Cat6A,Conectores,Belden,8.50
+RSL-CON-023,Conector Circular,Belden M12 conector 4 polos macho,Conectores,Belden,35.20
+RSL-REG-024,Regleta Terminal,Phoenix Contact UK 2.5N borne 2.5mm²,Conectores,Phoenix Contact,2.80
+RSL-RIE-025,Riel DIN 35mm,Phoenix Contact NS 35/7.5 riel DIN 2 metros,Conectores,Phoenix Contact,25.60
+RSL-ETQ-026,Etiquetas Brady,Brady PTL-31-427 etiquetas poliéster 25.4mm,Identificación,Brady,45.80
+RSL-CAN-027,Candado Seguridad,Brady 99557 candado nylon 38mm amarillo,Seguridad Industrial,Brady,28.90
+RSL-BLQ-028,Bloqueador Válvula,Brady 65965 bloqueador válvula bola grande,Seguridad Industrial,Brady,125.00
+RSL-VEN-029,Ventilador Axial,Hoffman A12AXFN ventilador filtro 120V,Climatización,Hoffman,185.00
+RSL-FIL-030,Filtro Aire,Hoffman A12FF12 filtro aire 12x12 pulgadas,Climatización,Hoffman,45.60
+RSL-CHR-031,Charola Cable,Hoffman PGS1524 charola perforada galvanizada,Cables y Canalizaciones,Hoffman,125.80
+RSL-GRP-032,Grapa Suspensión,Hoffman MG-51-105EZ grapa suspensión charola,Cables y Canalizaciones,Hoffman,17.36
+RSL-ACT-033,Actuador Eléctrico,Honeywell MS7505A2030 actuador lineal 24V,Automatización,Honeywell,285.00
+RSL-VAL-034,Válvula Solenoide,ASCO 8210G001 válvula solenoide 1/4 NPT,Automatización,ASCO,125.60
+RSL-PRE-035,Transmisor Presión,Honeywell STG94L transmisor presión 4-20mA,Instrumentación,Honeywell,485.00
+RSL-TEM-036,Transmisor Temperatura,Omega TxBlock RTD transmisor Pt100,Instrumentación,Omega,225.40
+RSL-CON-037,Convertidor I/V,Phoenix Contact MCR-C-UI convertidor 4-20mA,Instrumentación,Phoenix Contact,185.50
+RSL-AIS-038,Aislador Señal,Phoenix Contact MACX MCR aislador galvánico,Instrumentación,Phoenix Contact,165.80
+RSL-BAR-039,Barrera Seguridad,Pepperl+Fuchs KCD2-SR-Ex1 barrera intrínseca,Instrumentación,Pepperl+Fuchs,385.00
+RSL-DET-040,Detector Gas,Honeywell COSMO gas detector combustible,Seguridad Industrial,Honeywell,1250.00

@@ -1,0 +1,15 @@
+{
+  "name": "risolu-api",
+  "version": "1.0.0",
+  "description": "API para búsqueda y generación de sinónimos/abreviaturas de productos industriales RISOLU",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12"
+  }
+}

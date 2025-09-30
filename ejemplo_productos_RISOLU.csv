@@ -1,0 +1,41 @@
+Código,Alias,Descripción Corta,Categoría,Proveedor,Precio
+RSL-MTR-001,Martillo Bola,Martillo bola 16oz mango fibra vidrio,Herramientas Manuales,Stanley,28.50
+RSL-LLV-002,Llave Combinada,Llave combinada 15mm acero cromo vanadio,Herramientas Manuales,Truper,12.75
+RSL-DST-003,Destornillador Phillips,Destornillador phillips #2 punta magnética,Herramientas Manuales,Klein,15.90
+RSL-TLD-004,Taladro Percutor,Taladro percutor 1/2 800W con maletín,Herramientas Eléctricas,Makita,185.00
+RSL-AMO-005,Amoladora Angular,Amoladora angular 4-1/2 750W disco incluido,Herramientas Eléctricas,Bosch,95.60
+RSL-CAL-006,Caladora Orbital,Caladora orbital 65mm velocidad variable,Herramientas Eléctricas,DeWalt,125.00
+RSL-TRN-007,Tornillo Cabeza Hex,Tornillo cabeza hexagonal M12x80 grado 8.8,Fijación,Unbrako,3.45
+RSL-TRC-008,Tuerca Hexagonal,Tuerca hexagonal M12 acero inoxidable A2,Fijación,Fastenal,2.80
+RSL-ARD-009,Arandela Presión,Arandela presión M12 acero templado,Fijación,McMaster,0.65
+RSL-RDM-010,Rodamiento Rígido,Rodamiento rígido bolas 6308-2RS,Transmisión,SKF,35.20
+RSL-ENG-011,Engrane Recto,Engrane recto módulo 2.5 z=24 acero,Transmisión,Boston Gear,85.40
+RSL-CRR-012,Correa Trapecial,Correa trapecial A-47 caucho reforzado,Transmisión,Gates,18.90
+RSL-VLV-013,Válvula Bola,Válvula bola 1 NPT bronce 600 WOG,Hidráulico,Apollo,45.75
+RSL-BCB-014,Bomba Centrífuga,Bomba centrífuga 2HP 3500RPM hierro fundido,Hidráulico,Goulds,625.00
+RSL-FLT-015,Filtro Hidráulico,Filtro hidráulico retorno 10 micrones,Hidráulico,Parker,38.60
+RSL-MNG-016,Manguera Hidráulica,Manguera hidráulica SAE100R2AT 1/2 4000PSI,Hidráulico,Aeroquip,8.50
+RSL-CNT-017,Contactor,Contactor 25A bobina 24V contactos NA,Eléctrico,Square D,75.20
+RSL-CBL-018,Cable THW,Cable THW 12AWG cobre 600V 100m,Eléctrico,Condumex,125.80
+RSL-INT-019,Interruptor Termo,Interruptor termomagnético 20A 2P,Eléctrico,General Electric,35.40
+RSL-TRF-020,Transformador,Transformador 5KVA 220/440V trifásico,Eléctrico,Federal Pacific,485.00
+RSL-CSC-021,Casco Seguridad,Casco seguridad tipo II clase E blanco,Seguridad Industrial,MSA,42.30
+RSL-GNT-022,Guantes Nitrilo,Guantes nitrilo sin polvo talla M caja 100,Seguridad Industrial,Ansell,28.90
+RSL-GFS-023,Gafas Protección,Gafas protección policarbonato anti-empañe,Seguridad Industrial,3M,18.75
+RSL-RSP-024,Respirador N95,Respirador desechable N95 válvula exhalación,Seguridad Industrial,Moldex,8.40
+RSL-ARN-025,Arnés Seguridad,Arnés seguridad 5 puntos anticaídas,Seguridad Industrial,Miller,125.60
+RSL-MNG-026,Manómetro,Manómetro glicerina 0-160PSI 2-1/2 NPT,Instrumentación,Ashcroft,45.80
+RSL-TRM-027,Termómetro,Termómetro bimetálico 0-200°C 4 stem,Instrumentación,Weksler,62.50
+RSL-CLB-028,Calibrador Digital,Calibrador digital 6 IP67 acero inoxidable,Instrumentación,Mitutoyo,185.00
+RSL-MCM-029,Micrómetro,Micrómetro exterior 0-25mm graduación 0.01,Instrumentación,Starrett,95.40
+RSL-NVL-030,Nivel Burbuja,Nivel burbuja 24 aluminio 3 burbujas,Instrumentación,Stanley,35.20
+RSL-FLX-031,Flexómetro,Flexómetro 8m cinta reforzada gancho magnético,Instrumentación,Truper,22.60
+RSL-SLD-032,Soldadora Inverter,Soldadora inverter 200A IGBT portátil,Soldadura,Lincoln,485.00
+RSL-ELC-033,Electrodo E6013,Electrodo E6013 3/32 revestimiento rutílico,Soldadura,ESAB,45.80
+RSL-MSC-034,Máscara Fotosens,Máscara fotosensible DIN 11 regulable,Soldadura,Miller,125.00
+RSL-CRT-035,Cortadora Plasma,Cortadora plasma 40A aire comprimido,Corte,Hypertherm,850.00
+RSL-DSC-036,Disco Corte,Disco corte metal 4-1/2 x 1/16 x 7/8,Corte,Norton,3.80
+RSL-SRR-037,Sierra Cinta,Sierra cinta bi-metal 64-1/2 x 1/2 14TPI,Corte,Lenox,28.90
+RSL-GRS-038,Grasa Litio,Grasa base litio complejo NLGI#2 400g,Lubricación,Mobil,15.60
+RSL-ACT-039,Aceite Hidráulico,Aceite hidráulico ISO VG68 anti-desgaste 20L,Lubricación,Shell,85.20
+RSL-SLL-040,Sellador Roscas,Sellador roscas anaeróbico medio 50ml,Lubricación,Loctite,25.40

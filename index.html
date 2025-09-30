@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISOLU - Generador de Sinónimos para Productos Industriales</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏭 RISOLU - Generador de Sinónimos</h1>
+            <p>Optimiza la búsqueda de productos industriales con sinónimos inteligentes</p>
+            <small>Especializado en Automatización, Redes Industriales y Equipo Eléctrico</small>
+            <div class="api-status-container">
+                <div class="api-control-panel">
+                    <span id="apiStatus" class="api-status disconnected">Verificando API...</span>
+                    <div class="api-controls">
+                        <button id="startApiBtn" class="btn-api-control start" onclick="startAPI()" disabled>
+                            ▶️ Iniciar API
+                        </button>
+                        <button id="stopApiBtn" class="btn-api-control stop" onclick="stopAPI()" disabled>
+                            ⏹️ Detener API
+                        </button>
+                        <button id="restartApiBtn" class="btn-api-control restart" onclick="restartAPI()" disabled>
+                            🔄 Reiniciar API
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-box" id="uploadBox">
+                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display: none;">
+                <div class="upload-content">
+                    <div class="upload-icon">📊</div>
+                    <p>Arrastra y suelta tu archivo Excel aquí</p>
+                    <p>o <button class="btn-upload" onclick="document.getElementById('fileInput').click()">Selecciona un archivo</button></p>
+                    <small>Formatos soportados: .xlsx, .xls, .csv</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-section" id="controlsSection" style="display: none;">
+            <h3>📋 Vista Previa del Archivo y Selección de Columnas</h3>
+            
+            <!-- Vista previa de datos -->
+            <div class="preview-container">
+                <div class="preview-info">
+                    <span id="fileInfo">Archivo cargado: <strong id="fileName"></strong></span>
+                    <span id="rowCount">Filas: <strong id="totalRows"></strong></span>
+                </div>
+                
+                <div class="preview-table-container">
+                    <table id="previewTable" class="preview-table">
+                        <thead id="previewHeader"></thead>
+                        <tbody id="previewBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Controles de selección -->
+            <div class="column-selection">
+                <div class="selection-instructions">
+                    <h4>👆 Haz clic en los encabezados de columna para seleccionarlas:</h4>
+                    <div class="selection-indicators">
+                        <span class="indicator alias-indicator">🏷️ Alias/Código</span>
+                        <span class="indicator description-indicator">📝 Descripción</span>
+                    </div>
+                </div>
+                
+                <div class="selected-columns">
+                    <div class="selected-column">
+                        <label>Columna de Alias/Código:</label>
+                        <span id="selectedAlias" class="selected-value">Ninguna seleccionada</span>
+                    </div>
+                    <div class="selected-column">
+                        <label>Columna de Descripción:</label>
+                        <span id="selectedDescription" class="selected-value">Ninguna seleccionada</span>
+                    </div>
+                </div>
+                
+                <button class="btn-process" id="processBtn" onclick="generateSynonyms()" disabled>
+                    Generar Sinónimos
+                </button>
+            </div>
+        </div>
+
+        <div class="search-section" id="searchSection" style="display: none;">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar productos, alias o sinónimos...">
+                <button class="btn-search" onclick="searchProducts()">🔍</button>
+            </div>
+            <div class="filter-options">
+                <label>
+                    <input type="checkbox" id="searchAlias" checked> Buscar en alias
+                </label>
+                <label>
+                    <input type="checkbox" id="searchDescription" checked> Buscar en descripción
+                </label>
+                <label>
+                    <input type="checkbox" id="searchSynonyms" checked> Buscar en sinónimos
+                </label>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="results-header">
+                <h2>Resultados <span id="resultsCount"></span></h2>
+                <div class="export-options">
+                    <button class="btn-export" onclick="exportResults('excel')">📊 Exportar a Excel</button>
+                    <button class="btn-export" onclick="exportResults('csv')">📄 Exportar a CSV</button>
+                </div>
+            </div>
+            <div class="results-table-container">
+                <table id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>Alias</th>
+                            <th>Descripción</th>
+                            <th>Sinónimos Generados</th>
+                            <th>Palabras Clave</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Nueva sección para productos de RISOLU -->
+        <div class="risolu-products-section" id="risolusSection" style="display: none;">
+            <div class="risolu-header">
+                <h2>🛒 Productos en Tienda RISOLU</h2>
+                <p>Productos encontrados en la tienda online de RISOLU</p>
+            </div>
+            <div class="risolu-products-container" id="risolusContainer">
+                <!-- Los productos se llenarán dinámicamente -->
+            </div>
+        </div>
+
+        <div class="stats-section" id="statsSection" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="totalProducts">0</h3>
+                    <p>Productos Procesados</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalSynonyms">0</h3>
+                    <p>Sinónimos Generados</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="uniqueKeywords">0</h3>
+                    <p>Palabras Clave Únicas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nueva sección para gestión de memoria de sinónimos -->
+        <div class="memory-section" id="memorySection" style="display: block;">
+            <div class="memory-header">
+                <h2>💾 Gestión de Memoria de Sinónimos</h2>
+                <p>Sistema inteligente de memoria para mantener consistencia en sinónimos</p>
+            </div>
+            
+            <div class="memory-stats">
+                <div class="memory-stat-card">
+                    <h3 id="memoryTotalProducts">0</h3>
+                    <p>Productos en Memoria</p>
+                </div>
+                <div class="memory-stat-card">
+                    <h3 id="memoryTotalSynonyms">0</h3>
+                    <p>Sinónimos Almacenados</p>
+                </div>
+                <div class="memory-stat-card">
+                    <h3 id="memorySize">0 KB</h3>
+                    <p>Tamaño de Memoria</p>
+                </div>
+            </div>
+            
+            <div class="memory-controls">
+                <div class="memory-actions">
+                    <button class="btn-memory" onclick="refreshMemoryStats()">🔄 Actualizar Estadísticas</button>
+                    <button class="btn-memory" onclick="showMostUsedProducts()">📈 Productos Más Usados</button>
+                    <button class="btn-memory" onclick="adjustSimilarityThreshold()">⚙️ Ajustar Similitud</button>
+                </div>
+                
+                <div class="memory-export">
+                    <h4>Exportar Base de Datos:</h4>
+                    <button class="btn-export-memory" onclick="exportSynonymMemory('json')">📋 JSON</button>
+                    <button class="btn-export-memory" onclick="exportSynonymMemory('csv')">📄 CSV</button>
+                    <button class="btn-export-memory" onclick="exportSynonymMemory('excel')">📊 Excel</button>
+                </div>
+                
+                <div class="memory-import">
+                    <h4>Importar Base de Datos:</h4>
+                    <input type="file" id="memoryImportInput" accept=".json" style="display: none;" onchange="handleMemoryImport(this)">
+                    <button class="btn-import-memory" onclick="document.getElementById('memoryImportInput').click()">📥 Importar JSON</button>
+                    <button class="btn-clear-memory" onclick="clearSynonymMemory()">🗑️ Limpiar Memoria</button>
+                </div>
+            </div>
+            
+            <div class="similarity-settings" id="similaritySettings" style="display: none;">
+                <h4>⚙️ Configuración de Similitud</h4>
+                <div class="similarity-control">
+                    <label>Umbral de Similitud: <span id="similarityValue">0.7</span></label>
+                    <input type="range" id="similaritySlider" min="0.1" max="1.0" step="0.1" value="0.7" onchange="updateSimilarityThreshold(this.value)">
+                    <small>Valores más altos requieren mayor similitud para sugerir productos existentes</small>
+                </div>
+            </div>
+            
+            <div class="most-used-products" id="mostUsedProducts" style="display: none;">
+                <h4>📈 Productos Más Utilizados</h4>
+                <div id="mostUsedList" class="products-list">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
