@@ -1241,3 +1241,232 @@ header small {
 .memory-section {
     animation: memoryLoad 0.6s ease-out;
 }
+
+/* ====== ESTILOS PARA MODALES DE BÚSQUEDA WEB ====== */
+
+.search-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.search-modal-content {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.search-modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.3s ease;
+}
+
+.close-modal:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.search-modal-body {
+    padding: 25px;
+}
+
+.search-modal-body p {
+    margin: 0 0 20px 0;
+    color: #666;
+    font-size: 1em;
+}
+
+.search-options {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.search-option-btn {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-align: left;
+    box-shadow: 0 3px 10px rgba(33, 150, 243, 0.3);
+}
+
+.search-option-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+}
+
+.search-all {
+    border-top: 2px solid #f0f0f0;
+    padding-top: 20px;
+}
+
+.search-all-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    width: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+}
+
+.search-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+/* Configuración de URLs */
+.url-config {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.url-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.url-input-group label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.url-input-group input {
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.9em;
+    transition: border-color 0.3s ease;
+}
+
+.url-input-group input:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.config-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-save-config {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-save-config:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+}
+
+.btn-reset-config {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-reset-config:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+}
+
+/* Responsive para modales */
+@media (max-width: 768px) {
+    .search-modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .search-modal-header {
+        padding: 15px;
+    }
+    
+    .search-modal-body {
+        padding: 20px;
+    }
+    
+    .config-actions {
+        flex-direction: column;
+    }
+    
+    .btn-save-config,
+    .btn-reset-config {
+        width: 100%;
+    }
+}

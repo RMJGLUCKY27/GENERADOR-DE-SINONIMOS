@@ -15,16 +15,16 @@
             <small>Especializado en Automatización, Redes Industriales y Equipo Eléctrico</small>
             <div class="api-status-container">
                 <div class="api-control-panel">
-                    <span id="apiStatus" class="api-status disconnected">Verificando API...</span>
+                    <span id="apiStatus" class="api-status connected">Búsqueda Web Activa 🌐</span>
                     <div class="api-controls">
-                        <button id="startApiBtn" class="btn-api-control start" onclick="startAPI()" disabled>
-                            ▶️ Iniciar API
+                        <button id="toggleWebSearchBtn" class="btn-api-control start" onclick="toggleWebSearch()">
+                            🔄 Alternar Búsqueda
                         </button>
-                        <button id="stopApiBtn" class="btn-api-control stop" onclick="stopAPI()" disabled>
-                            ⏹️ Detener API
+                        <button id="configureUrlsBtn" class="btn-api-control stop" onclick="configureSearchUrls()">
+                            ⚙️ Configurar URLs
                         </button>
-                        <button id="restartApiBtn" class="btn-api-control restart" onclick="restartAPI()" disabled>
-                            🔄 Reiniciar API
+                        <button id="testSearchBtn" class="btn-api-control restart" onclick="searchInMultipleSites('test martillo')">
+                            🧪 Probar Búsqueda
                         </button>
                     </div>
                 </div>

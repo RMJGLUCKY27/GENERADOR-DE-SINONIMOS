@@ -12,12 +12,14 @@ let synonymMemory = new Map(); // Cache en memoria
 let productDatabase = new Map(); // Base de datos de productos
 let similarityThreshold = 0.7; // Umbral de similitud (70%)
 
-// Configuración de la API
-const API_BASE_URL = 'http://localhost:3001';
-const API_CONTROL_URL = 'http://localhost:3002';
-let apiAvailable = false;
-let controlServerAvailable = false;
-let autoStartAttempted = false;
+// Variables para búsqueda web directa
+const SEARCH_URLS = {
+    risolu: 'https://www.risolu.com.mx/search?q=',
+    grainger: 'https://www.grainger.com.mx/search?query=',
+    amazon: 'https://www.amazon.com.mx/s?k=',
+    mercadolibre: 'https://listado.mercadolibre.com.mx/'
+};
+let webSearchEnabled = true;
 
 // Inicialización de la aplicación
 document.addEventListener('DOMContentLoaded', function() {
@@ -881,11 +883,10 @@ function displayResults(data) {
             <td>
                 <div class="api-actions">
                     <button class="btn-api" onclick="searchProductInRisolu('${escapeHtml(item.alias)}')" 
-                            ${!apiAvailable ? 'disabled' : ''}>
-                        🔍 Buscar en RISOLU
+                            ${!webSearchEnabled ? 'disabled' : ''}>
+                        🔍 Buscar Web
                     </button>
-                    <button class="btn-api" onclick="generateEnhancedSynonyms(${index})" 
-                            ${!apiAvailable ? 'disabled' : ''}>
+                    <button class="btn-api" onclick="generateEnhancedSynonyms(${index})">
                         ⚡ Sinónimos IA
                     </button>
                 </div>
@@ -1321,137 +1322,136 @@ function getMemoryStats() {
     return stats;
 }
 
-// ====== FUNCIONES DE INTEGRACIÓN CON API ======
+// ====== FUNCIONES DE BÚSQUEDA WEB DIRECTA ======
 
-// Verificar si la API está disponible
-async function checkApiAvailability() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/sinonimos`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ alias: 'test', descripcion: 'test' })
-        });
-        
-        if (response.ok) {
-            apiAvailable = true;
-            updateApiStatus(true);
-        } else {
-            throw new Error('API no disponible');
-        }
-    } catch (error) {
-        apiAvailable = false;
-        updateApiStatus(false);
-        console.warn('API local no disponible:', error.message);
-    }
-}
-
-// Actualizar indicador de estado de la API
-function updateApiStatus(available) {
-    const statusElement = document.getElementById('apiStatus');
-    if (statusElement) {
-        statusElement.textContent = available ? 'API Conectada' : 'API Desconectada';
-        statusElement.className = available ? 'api-status connected' : 'api-status disconnected';
-    }
-}
-
-// Buscar productos en RISOLU usando la API
-async function searchProductsAPI(query) {
-    if (!apiAvailable) {
-        throw new Error('API no disponible');
-    }
+// Función para búsqueda web directa
+function openWebSearch(productName, searchEngine = 'risolu') {
+    const cleanQuery = encodeURIComponent(productName.trim());
+    const searchUrl = SEARCH_URLS[searchEngine] + cleanQuery;
     
-    try {
-        const response = await fetch(`${API_BASE_URL}/buscar?q=${encodeURIComponent(query)}`);
-        
-        if (!response.ok) {
-            throw new Error(`Error en la búsqueda: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        return data.resultados || [];
-    } catch (error) {
-        console.error('Error buscando productos:', error);
-        throw error;
-    }
-}
-
-// Generar sinónimos usando la API
-async function generateSynonymsAPI(alias, descripcion) {
-    if (!apiAvailable) {
-        throw new Error('API no disponible');
-    }
+    // Abrir en nueva pestaña
+    window.open(searchUrl, '_blank');
     
-    try {
-        const response = await fetch(`${API_BASE_URL}/sinonimos`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ alias, descripcion })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Error generando sinónimos: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        return data.synonyms || [];
-    } catch (error) {
-        console.error('Error generando sinónimos:', error);
-        throw error;
+    showStatusMessage(`🔍 Búsqueda iniciada en ${searchEngine.toUpperCase()}`, 'info');
+}
+
+// Función para búsqueda múltiple
+function searchInMultipleSites(productName) {
+    const searchEngines = ['risolu', 'grainger', 'amazon', 'mercadolibre'];
+    
+    searchEngines.forEach((engine, index) => {
+        setTimeout(() => {
+            openWebSearch(productName, engine);
+        }, index * 1000); // Retraso de 1 segundo entre cada búsqueda
+    });
+    
+    showStatusMessage(`🚀 Búsqueda iniciada en ${searchEngines.length} sitios`, 'success');
+}
+
+// Actualizar estado de búsqueda web
+function updateWebSearchStatus() {
+    const apiStatus = document.getElementById('apiStatus');
+    
+    if (webSearchEnabled) {
+        apiStatus.textContent = 'Búsqueda Web Activa 🌐';
+        apiStatus.className = 'api-status connected';
+    } else {
+        apiStatus.textContent = 'Búsqueda Web Desactivada ❌';
+        apiStatus.className = 'api-status disconnected';
     }
 }
 
-// Función mejorada para buscar productos combinando lógica local y API
-async function searchProductsEnhanced(query) {
-    const results = {
-        local: [],
-        api: [],
-        synonyms: []
+// Buscar producto específico usando búsqueda web directa
+function searchProductInRisolu(alias) {
+    const searchOptions = [
+        { name: 'RISOLU', engine: 'risolu' },
+        { name: 'Grainger', engine: 'grainger' },
+        { name: 'Amazon', engine: 'amazon' },
+        { name: 'MercadoLibre', engine: 'mercadolibre' }
+    ];
+    
+    // Crear modal de opciones de búsqueda
+    const modal = createSearchModal(alias, searchOptions);
+    document.body.appendChild(modal);
+    
+    showStatusMessage(`🔍 Opciones de búsqueda para: ${alias}`, 'info');
+}
+
+// Crear modal para seleccionar sitio de búsqueda
+function createSearchModal(productName, searchOptions) {
+    const modal = document.createElement('div');
+    modal.className = 'search-modal';
+    modal.innerHTML = `
+        <div class="search-modal-content">
+            <div class="search-modal-header">
+                <h3>🔍 Buscar: ${escapeHtml(productName)}</h3>
+                <button class="close-modal" onclick="this.closest('.search-modal').remove()">&times;</button>
+            </div>
+            <div class="search-modal-body">
+                <p>Selecciona dónde buscar este producto:</p>
+                <div class="search-options">
+                    ${searchOptions.map(option => `
+                        <button class="search-option-btn" onclick="openWebSearch('${escapeHtml(productName)}', '${option.engine}'); this.closest('.search-modal').remove();">
+                            🌐 Buscar en ${option.name}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="search-all">
+                    <button class="search-all-btn" onclick="searchInMultipleSites('${escapeHtml(productName)}'); this.closest('.search-modal').remove();">
+                        🚀 Buscar en Todos los Sitios
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return modal;
+}
+
+// Función para generar sinónimos potenciados (sin API)
+function generateEnhancedSynonyms(index) {
+    if (!processedData[index]) return;
+    
+    const item = processedData[index];
+    const enhancedSynonyms = new Set(item.synonyms);
+    
+    // Agregar variaciones adicionales basadas en el contexto RISOLU
+    const contextualTerms = generateContextualSynonyms(item.alias, item.description);
+    contextualTerms.forEach(term => enhancedSynonyms.add(term));
+    
+    // Actualizar los sinónimos del producto
+    item.synonyms = Array.from(enhancedSynonyms);
+    
+    // Actualizar la visualización
+    displayResults(processedData);
+    
+    showStatusMessage(`✨ Sinónimos mejorados para: ${item.alias}`, 'success');
+}
+
+// Generar sinónimos contextuales adicionales
+function generateContextualSynonyms(alias, description) {
+    const contextTerms = new Set();
+    const text = (alias + ' ' + description).toLowerCase();
+    
+    // Términos específicos según contexto industrial
+    const contextPatterns = {
+        automation: ['plc', 'hmi', 'drive', 'servo', 'encoder'],
+        electrical: ['breaker', 'contactor', 'transformer', 'ups'],
+        networking: ['switch', 'cable', 'connector', 'gateway'],
+        safety: ['helmet', 'gloves', 'glasses', 'harness'],
+        tools: ['hammer', 'wrench', 'drill', 'saw'],
+        hydraulic: ['valve', 'pump', 'filter', 'cylinder']
     };
     
-    // Búsqueda local (existente)
-    results.local = searchLocalProducts(query);
-    
-    // Búsqueda en API si está disponible
-    if (apiAvailable) {
-        try {
-            results.api = await searchProductsAPI(query);
-        } catch (error) {
-            console.warn('Error en búsqueda API:', error.message);
+    // Buscar patrones y agregar términos relacionados
+    Object.entries(contextPatterns).forEach(([category, patterns]) => {
+        if (patterns.some(pattern => text.includes(pattern))) {
+            patterns.forEach(term => contextTerms.add(term));
+            contextTerms.add(category);
         }
-    }
+    });
     
-    return results;
-}
-
-// Función mejorada para generar sinónimos combinando lógica local y API
-async function generateSynonymsEnhanced(alias, descripcion) {
-    const results = {
-        local: [],
-        api: [],
-        combined: []
-    };
-    
-    // Sinónimos locales (existente)
-    results.local = generateSynonyms(alias, descripcion);
-    
-    // Sinónimos de API si está disponible
-    if (apiAvailable) {
-        try {
-            results.api = await generateSynonymsAPI(alias, descripcion);
-        } catch (error) {
-            console.warn('Error en sinónimos API:', error.message);
-        }
-    }
-    
-    // Combinar y eliminar duplicados
-    const allSynonyms = [...results.local, ...results.api];
-    results.combined = [...new Set(allSynonyms)].filter(Boolean);
-    
-    return results;
+    return Array.from(contextTerms);
 }
 
 // ====== FUNCIONES ESPECÍFICAS PARA BOTONES DE API ======
@@ -1595,105 +1595,98 @@ function searchLocalProducts(query) {
     });
 }
 
-// ====== FUNCIONES DE CONTROL DE API ======
+// ====== FUNCIONES DE CONTROL DE BÚSQUEDA WEB ======
 
-// Asegurar que el servidor de control esté corriendo
-async function ensureControlServerRunning() {
-    try {
-        // Primero verificar si ya está corriendo
-        const response = await fetch(`${API_CONTROL_URL}/api/status`);
-        if (response.ok) {
-            console.log('Servidor de control ya está corriendo');
-            return true;
-        }
-    } catch (error) {
-        // Si no está corriendo, intentar iniciarlo
-        console.log('Servidor de control no disponible, intentando iniciarlo...');
-    }
+// Activar/desactivar búsqueda web
+function toggleWebSearch() {
+    webSearchEnabled = !webSearchEnabled;
+    updateWebSearchStatus();
     
-    try {
-        // Intentar iniciar el servidor de control usando una petición especial
-        await startControlServer();
-        
-        // Esperar un momento para que inicie
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        // Verificar nuevamente
-        const response = await fetch(`${API_CONTROL_URL}/api/status`);
-        if (response.ok) {
-            showStatusMessage('Servidor de control iniciado automáticamente', 'success');
-            return true;
-        }
-    } catch (error) {
-        console.warn('No se pudo iniciar el servidor de control automáticamente:', error.message);
-        showStatusMessage('Inicia manualmente: node api-control.js', 'warning');
-    }
+    const message = webSearchEnabled ? 
+        'Búsqueda web activada' : 
+        'Búsqueda web desactivada';
     
-    return false;
+    showStatusMessage(message, webSearchEnabled ? 'success' : 'info');
 }
 
-// Iniciar el servidor de control (simulado via service worker o endpoint especial)
-async function startControlServer() {
-    // Como no podemos ejecutar comandos del sistema directamente desde el navegador,
-    // creamos un mecanismo alternativo usando una petición especial al puerto 3003
-    try {
-        const response = await fetch('http://localhost:3003/start-control', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ action: 'start-control-server' })
-        });
-        
-        if (response.ok) {
-            console.log('Servidor de control iniciado via bootstrap');
-            return true;
-        }
-    } catch (error) {
-        // Si el bootstrap no está disponible, mostrar instrucciones
-        throw new Error('Bootstrap server no disponible');
-    }
+// Configurar URLs de búsqueda personalizadas
+function configureSearchUrls() {
+    const modal = createSearchConfigModal();
+    document.body.appendChild(modal);
 }
 
-// Verificar si el servidor de control está disponible
-async function checkControlServerAvailability() {
-    try {
-        const response = await fetch(`${API_CONTROL_URL}/api/status`);
-        
-        if (response.ok) {
-            controlServerAvailable = true;
-            updateControlButtons(true);
-            
-            // Verificar estado actual de la API
-            const data = await response.json();
-            updateApiControlStatus(data);
-        } else {
-            throw new Error('Servidor de control no disponible');
-        }
-    } catch (error) {
-        controlServerAvailable = false;
-        updateControlButtons(false);
-        console.warn('Servidor de control no disponible:', error.message);
-    }
-}
-
-// Actualizar estado de los botones de control
-function updateControlButtons(available) {
-    const startBtn = document.getElementById('startApiBtn');
-    const stopBtn = document.getElementById('stopApiBtn');
-    const restartBtn = document.getElementById('restartApiBtn');
+// Crear modal de configuración de URLs
+function createSearchConfigModal() {
+    const modal = document.createElement('div');
+    modal.className = 'search-modal';
+    modal.innerHTML = `
+        <div class="search-modal-content">
+            <div class="search-modal-header">
+                <h3>⚙️ Configurar URLs de Búsqueda</h3>
+                <button class="close-modal" onclick="this.closest('.search-modal').remove()">&times;</button>
+            </div>
+            <div class="search-modal-body">
+                <div class="url-config">
+                    ${Object.entries(SEARCH_URLS).map(([key, url]) => `
+                        <div class="url-input-group">
+                            <label>${key.toUpperCase()}:</label>
+                            <input type="url" id="url-${key}" value="${url}" placeholder="https://...">
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="config-actions">
+                    <button class="btn-save-config" onclick="saveUrlConfiguration(); this.closest('.search-modal').remove();">
+                        💾 Guardar Configuración
+                    </button>
+                    <button class="btn-reset-config" onclick="resetUrlConfiguration(); this.closest('.search-modal').remove();">
+                        🔄 Restablecer Defaults
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
     
-    if (available) {
-        startBtn.disabled = false;
-        stopBtn.disabled = false;
-        restartBtn.disabled = false;
-    } else {
-        startBtn.disabled = true;
-        stopBtn.disabled = true;
-        restartBtn.disabled = true;
-        
-        // Mostrar mensaje de que el servidor de control no está disponible
-        showStatusMessage('Servidor de control no disponible. Inicia api-control.js para usar los controles.', 'warning');
+    return modal;
+}
+
+// Guardar configuración de URLs
+function saveUrlConfiguration() {
+    Object.keys(SEARCH_URLS).forEach(key => {
+        const input = document.getElementById(`url-${key}`);
+        if (input && input.value.trim()) {
+            SEARCH_URLS[key] = input.value.trim();
+        }
+    });
+    
+    // Guardar en localStorage
+    localStorage.setItem('risolusSearchUrls', JSON.stringify(SEARCH_URLS));
+    showStatusMessage('Configuración de URLs guardada', 'success');
+}
+
+// Restablecer URLs por defecto
+function resetUrlConfiguration() {
+    const defaultUrls = {
+        risolu: 'https://www.risolu.com.mx/search?q=',
+        grainger: 'https://www.grainger.com.mx/search?query=',
+        amazon: 'https://www.amazon.com.mx/s?k=',
+        mercadolibre: 'https://listado.mercadolibre.com.mx/'
+    };
+    
+    Object.assign(SEARCH_URLS, defaultUrls);
+    localStorage.removeItem('risolusSearchUrls');
+    showStatusMessage('URLs restablecidas a valores por defecto', 'success');
+}
+
+// Cargar configuración de URLs desde localStorage
+function loadUrlConfiguration() {
+    try {
+        const savedUrls = localStorage.getItem('risolusSearchUrls');
+        if (savedUrls) {
+            const urls = JSON.parse(savedUrls);
+            Object.assign(SEARCH_URLS, urls);
+        }
+    } catch (error) {
+        console.warn('Error cargando configuración de URLs:', error);
     }
 }
 
@@ -1803,107 +1796,29 @@ async function restartAPI() {
     }
     
     try {
-        showStatusMessage('Reiniciando API...', 'loading');
-        
-        const response = await fetch(`${API_CONTROL_URL}/api/restart`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showStatusMessage('API reiniciada correctamente', 'success');
-            updateApiControlStatus(data.status);
-            
-            // Re-verificar disponibilidad después de un momento
-            setTimeout(() => {
-                checkApiAvailability();
-            }, 5000);
-        } else {
-            throw new Error(data.error || 'Error desconocido');
-        }
-        
-    } catch (error) {
-        showStatusMessage(`Error reiniciando API: ${error.message}`, 'error');
-    }
-}
-
-// Verificar estado de la API periódicamente
-setInterval(async () => {
-    if (controlServerAvailable) {
-        try {
-            const response = await fetch(`${API_CONTROL_URL}/api/status`);
-            if (response.ok) {
-                const data = await response.json();
-                updateApiControlStatus(data);
-            }
-        } catch (error) {
-            // No mostrar errores en verificaciones automáticas
-        }
-    }
-}, 10000); // Verificar cada 10 segundos
-
-// ====== FUNCIÓN DE MENSAJES DE ESTADO ======
-
-function showStatusMessage(message, type = 'info') {
-    const statusBar = document.getElementById('statusBar') || createStatusBar();
-    
-    statusBar.textContent = message;
-    statusBar.className = `status-bar status-${type}`;
-    statusBar.style.display = 'block';
-    
-    // Auto-ocultar después de 5 segundos (excepto errores y loading)
-    if (type !== 'error' && type !== 'loading') {
-        setTimeout(() => {
-            statusBar.style.display = 'none';
-        }, 5000);
-    }
-}
-
-function createStatusBar() {
-    const statusBar = document.createElement('div');
-    statusBar.id = 'statusBar';
-    statusBar.className = 'status-bar';
-    statusBar.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-weight: 500;
-        max-width: 400px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        display: none;
-        transition: all 0.3s ease;
-    `;
-    
-    document.body.appendChild(statusBar);
-    
-    // Agregar estilos CSS si no existen
-    if (!document.getElementById('statusBarStyles')) {
-        const styles = document.createElement('style');
-        styles.id = 'statusBarStyles';
-        styles.textContent = `
-            .status-bar.status-info { background: #e8f4fd; color: #0066cc; border-left: 4px solid #0066cc; }
-            .status-bar.status-success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
-            .status-bar.status-error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
-            .status-bar.status-loading { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
-        `;
-        document.head.appendChild(styles);
-    }
-    
-    return statusBar;
-}
-
 // ====== INICIALIZACIÓN DEL SISTEMA ======
 
 // Inicializar al cargar la página
 window.addEventListener('DOMContentLoaded', function() {
     // Cargar memoria de sinónimos al iniciar
+    loadSynonymMemory();
+    
+    // Cargar configuración de URLs de búsqueda
+    loadUrlConfiguration();
+    
+    // Inicializar estado de búsqueda web
+    updateWebSearchStatus();
+    
+    // Mostrar estadísticas de memoria si hay datos
+    const stats = getMemoryStats();
+    if (stats.totalProducts > 0) {
+        showStatusMessage(`📚 Memoria cargada: ${stats.totalProducts} productos, ${stats.totalSynonyms} sinónimos`, 'info');
+    }
+    
+    console.log('Sistema RISOLU Sinónimos v2.0 iniciado correctamente');
+    console.log('Memoria disponible:', stats);
+    console.log('Búsqueda web habilitada:', webSearchEnabled);
+});
     loadSynonymMemory();
     
     // Inicializar verificaciones de API
@@ -1918,7 +1833,21 @@ window.addEventListener('DOMContentLoaded', function() {
     
     console.log('Sistema RISOLU Sinónimos v2.0 iniciado correctamente');
     console.log('Memoria disponible:', stats);
-});
+    console.log('Búsqueda web habilitada:', webSearchEnabled);
+    
+    // Cargar configuración de similitud
+    const savedThreshold = localStorage.getItem('risolusimilarityThreshold');
+    if (savedThreshold) {
+        similarityThreshold = parseFloat(savedThreshold);
+        if (document.getElementById('similaritySlider')) {
+            document.getElementById('similaritySlider').value = similarityThreshold;
+            document.getElementById('similarityValue').textContent = similarityThreshold;
+        }
+    }
+    
+    // Actualizar estadísticas de memoria en la interfaz
+    setTimeout(refreshMemoryStats, 1000);
+}
 
 // ====== FUNCIONES DE INTERFAZ DE MEMORIA ======
 
@@ -1999,18 +1928,3 @@ function handleMemoryImport(input) {
             input.value = ''; // Limpiar input
         });
 }
-
-// Cargar configuración de similitud al iniciar
-window.addEventListener('DOMContentLoaded', function() {
-    const savedThreshold = localStorage.getItem('risolusimilarityThreshold');
-    if (savedThreshold) {
-        similarityThreshold = parseFloat(savedThreshold);
-        if (document.getElementById('similaritySlider')) {
-            document.getElementById('similaritySlider').value = similarityThreshold;
-            document.getElementById('similarityValue').textContent = similarityThreshold;
-        }
-    }
-    
-    // Actualizar estadísticas de memoria en la interfaz
-    setTimeout(refreshMemoryStats, 1000);
-});
