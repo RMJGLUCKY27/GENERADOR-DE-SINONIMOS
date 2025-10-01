@@ -173,15 +173,49 @@ header small {
 }
 
 .preview-table th.selected-alias {
-    background: #fed7d7;
-    color: #c53030;
-    border: 2px solid #f56565;
+    background: #fed7d7 !important;
+    color: #c53030 !important;
+    border: 3px solid #f56565 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 10px rgba(245, 101, 101, 0.5) !important;
+    position: relative !important;
+}
+
+.preview-table th.selected-alias::after {
+    content: '🏷️ ALIAS';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #c53030;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
 }
 
 .preview-table th.selected-description {
-    background: #c6f6d5;
-    color: #276749;
-    border: 2px solid #48bb78;
+    background: #c6f6d5 !important;
+    color: #276749 !important;
+    border: 3px solid #48bb78 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 10px rgba(72, 187, 120, 0.5) !important;
+    position: relative !important;
+}
+
+.preview-table th.selected-description::after {
+    content: '📝 DESCRIPCIÓN';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #48bb78;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
 }
 
 .preview-table td {

@@ -26,12 +26,22 @@ function initializeApp() {
     try {
         console.log('🚀 Iniciando RISOLU Sinónimos v2.0...');
         
+        // Verificar librería XLSX
+        if (typeof XLSX === 'undefined') {
+            console.error('❌ XLSX no está cargado. Verifica la conexión CDN.');
+            showStatusMessage('❌ Error: Librería XLSX no disponible', 'error');
+        } else {
+            console.log('✅ Librería XLSX cargada correctamente');
+        }
+        
         // Verificar que todos los elementos DOM existen
-        const requiredElements = ['fileInput', 'uploadBox', 'webSearchStatus'];
+        const requiredElements = ['fileInput', 'uploadBox', 'webSearchStatus', 'previewTable', 'previewHeader', 'previewBody', 'processBtn'];
         const missingElements = requiredElements.filter(id => !document.getElementById(id));
         
         if (missingElements.length > 0) {
             console.warn('⚠️ Elementos DOM faltantes:', missingElements);
+        } else {
+            console.log('✅ Todos los elementos DOM requeridos están presentes');
         }
         
         initializeEventListeners();
@@ -90,47 +100,24 @@ function initializeEventListeners() {
     const fileInput = document.getElementById('fileInput');
     const uploadBox = document.getElementById('uploadBox');
     const searchInput = document.getElementById('searchInput');
-    const processBtn = document.getElementById('processBtn');
 
     // Eventos del input de archivo
-    if (fileInput) {
-        fileInput.addEventListener('change', handleFileSelect);
-    }
+    fileInput.addEventListener('change', handleFileSelect);
     
     // Eventos de drag and drop
-    if (uploadBox) {
-        uploadBox.addEventListener('dragover', handleDragOver);
-        uploadBox.addEventListener('dragleave', handleDragLeave);
-        uploadBox.addEventListener('drop', handleFileDrop);
-        
-        // Click en upload box para seleccionar archivo
-        uploadBox.addEventListener('click', function() {
-            if (fileInput) fileInput.click();
-        });
-    }
+    uploadBox.addEventListener('dragover', handleDragOver);
+    uploadBox.addEventListener('dragleave', handleDragLeave);
+    uploadBox.addEventListener('drop', handleFileDrop);
     
     // Evento de búsqueda en tiempo real
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(searchProducts, 300));
-        
-        // Evento Enter en búsqueda
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchProducts();
-            }
-        });
-    }
+    searchInput.addEventListener('input', debounce(searchProducts, 300));
     
-    // Event listener para el botón de procesar (backup del onclick)
-    if (processBtn) {
-        processBtn.addEventListener('click', function(e) {
-            // Prevenir doble ejecución si ya tiene onclick
-            if (!e.isTrusted) return;
-            generateSynonyms();
-        });
-    }
-    
-    console.log('✅ Event listeners inicializados correctamente');
+    // Evento Enter en búsqueda
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchProducts();
+        }
+    });
 }
 
 // Funciones de manejo de archivos
@@ -162,14 +149,17 @@ function handleFileSelect(e) {
 }
 
 function processFile(file) {
+    console.log(`[RISOLU] 📂 Procesando archivo: ${file.name}`);
     const fileExtension = file.name.split('.').pop().toLowerCase();
     
     if (!['xlsx', 'xls', 'csv'].includes(fileExtension)) {
+        console.error(`[RISOLU] ❌ Extensión no soportada: ${fileExtension}`);
         alert('Por favor selecciona un archivo Excel (.xlsx, .xls) o CSV (.csv)');
         return;
     }
 
     currentFileName = file.name;
+    console.log(`[RISOLU] ✅ Extensión válida: ${fileExtension}`);
     showLoading();
     
     const reader = new FileReader();
@@ -218,28 +208,28 @@ function processFile(file) {
 }
 
 function displayPreview() {
-    console.log('📄 Mostrando vista previa del archivo...');
-    
     // Actualizar información del archivo
-    const fileNameEl = document.getElementById('fileName');
-    const totalRowsEl = document.getElementById('totalRows');
+    document.getElementById('fileName').textContent = currentFileName;
+    document.getElementById('totalRows').textContent = (excelData.length - 1).toLocaleString();
     
-    if (fileNameEl) fileNameEl.textContent = currentFileName;
-    if (totalRowsEl) totalRowsEl.textContent = (excelData.length - 1).toLocaleString();
+    // Mostrar sección de controles y tabla de vista previa
+    const controlsSection = document.getElementById('controlsSection');
+    if (controlsSection) {
+        controlsSection.style.display = 'block';
+        console.log('[RISOLU] Sección de controles mostrada');
+    }
+    const previewTable = document.getElementById('previewTable');
+    if (previewTable) {
+        previewTable.style.display = 'table';
+        console.log('[RISOLU] Tabla de vista previa mostrada');
+    }
     
     // Obtener encabezados y datos
     const headers = excelData[0];
     const dataRows = excelData.slice(1, 11); // Mostrar máximo 10 filas de datos
     
-    console.log(`📊 Headers encontrados: ${headers.length}`, headers);
-    
     // Crear encabezados de la tabla
     const headerRow = document.getElementById('previewHeader');
-    if (!headerRow) {
-        console.error('❌ Elemento previewHeader no encontrado');
-        return;
-    }
-    
     headerRow.innerHTML = '';
     
     const headerRowElement = document.createElement('tr');
@@ -249,25 +239,34 @@ function displayPreview() {
         th.dataset.columnIndex = index;
         th.title = 'Haz clic para seleccionar como Alias o Descripción';
         th.style.cursor = 'pointer';
-        th.classList.add('selectable-header');
         
-        // Agregar evento de click para selección
-        th.addEventListener('click', () => {
-            console.log(`👆 Click en columna ${index}: ${header}`);
+        // Agregar evento de click para selección con verificación
+        th.addEventListener('click', function(event) {
+            console.log(`[RISOLU] 🖱️ Click detectado en columna: ${header || `Columna ${index + 1}`}`);
             selectColumn(index, header || `Columna ${index + 1}`, th);
+        });
+        
+        // Agregar efecto hover visual
+        th.addEventListener('mouseenter', function() {
+            if (!th.classList.contains('selected-alias') && !th.classList.contains('selected-description')) {
+                th.style.background = '#cbd5e0';
+            }
+        });
+        
+        th.addEventListener('mouseleave', function() {
+            if (!th.classList.contains('selected-alias') && !th.classList.contains('selected-description')) {
+                th.style.background = '#edf2f7';
+            }
         });
         
         headerRowElement.appendChild(th);
     });
     headerRow.appendChild(headerRowElement);
     
+    console.log(`[RISOLU] ✅ ${headers.length} encabezados creados con eventos de click`);
+    
     // Crear filas de datos
     const tbody = document.getElementById('previewBody');
-    if (!tbody) {
-        console.error('❌ Elemento previewBody no encontrado');
-        return;
-    }
-    
     tbody.innerHTML = '';
     
     dataRows.forEach((row, rowIndex) => {
@@ -295,51 +294,33 @@ function displayPreview() {
         tr.appendChild(td);
         tbody.appendChild(tr);
     }
-    
-    // Mostrar la sección de vista previa
-    const previewSection = document.getElementById('previewSection');
-    if (previewSection) {
-        previewSection.style.display = 'block';
-    }
-    
-    // Mostrar controles
-    showControlsSection();
-    
-    // Resetear selecciones previas
-    selectedAliasColumn = null;
-    selectedDescriptionColumn = null;
-    updateProcessButton();
-    
-    console.log('✅ Vista previa mostrada correctamente');
+    // Log de depuración para selección de columnas
+    console.log('[RISOLU] Vista previa generada. Haz clic en los encabezados para seleccionar columnas.');
 }
 
 function selectColumn(columnIndex, columnName, headerElement) {
-    console.log(`🔍 Seleccionando columna ${columnIndex}: ${columnName}`);
-    
-    if (!headerElement) {
-        console.error('❌ Header element no encontrado');
-        return;
-    }
+    console.log(`[RISOLU] 👆 Columna seleccionada: ${columnName} (índice: ${columnIndex})`);
     
     // Determinar qué tipo de columna seleccionar basado en clics previos
     const currentAliasHeader = document.querySelector('.preview-table th.selected-alias');
     const currentDescHeader = document.querySelector('.preview-table th.selected-description');
     
+    console.log(`[RISOLU] Estado actual - Alias: ${selectedAliasColumn}, Descripción: ${selectedDescriptionColumn}`);
+    
     // Si ya está seleccionada, deseleccionarla
     if (headerElement.classList.contains('selected-alias')) {
-        console.log('🔄 Deseleccionando columna de alias');
+        console.log('[RISOLU] Deseleccionando alias');
         headerElement.classList.remove('selected-alias');
         selectedAliasColumn = null;
         updateSelectedColumnDisplay('alias', null);
     } else if (headerElement.classList.contains('selected-description')) {
-        console.log('🔄 Deseleccionando columna de descripción');
+        console.log('[RISOLU] Deseleccionando descripción');
         headerElement.classList.remove('selected-description');
         selectedDescriptionColumn = null;
         updateSelectedColumnDisplay('description', null);
     } else {
         // Lógica de selección inteligente
         if (!currentAliasHeader) {
-            console.log('✅ Seleccionando como columna de ALIAS');
             // Si no hay alias seleccionado, seleccionar como alias
             if (currentDescHeader) currentDescHeader.classList.remove('selected-description');
             headerElement.classList.add('selected-alias');
@@ -348,13 +329,11 @@ function selectColumn(columnIndex, columnName, headerElement) {
             updateSelectedColumnDisplay('alias', columnName);
             updateSelectedColumnDisplay('description', null);
         } else if (!currentDescHeader) {
-            console.log('✅ Seleccionando como columna de DESCRIPCIÓN');
             // Si ya hay alias, seleccionar como descripción
             headerElement.classList.add('selected-description');
             selectedDescriptionColumn = columnIndex;
             updateSelectedColumnDisplay('description', columnName);
         } else {
-            console.log('🔄 Reemplazando columna de ALIAS');
             // Si ambos están seleccionados, reemplazar alias
             currentAliasHeader.classList.remove('selected-alias');
             headerElement.classList.add('selected-alias');
@@ -362,8 +341,6 @@ function selectColumn(columnIndex, columnName, headerElement) {
             updateSelectedColumnDisplay('alias', columnName);
         }
     }
-    
-    console.log(`📊 Estado actual - Alias: ${selectedAliasColumn}, Descripción: ${selectedDescriptionColumn}`);
     
     // Actualizar estado del botón
     updateProcessButton();
@@ -384,24 +361,14 @@ function updateSelectedColumnDisplay(type, columnName) {
 
 function updateProcessButton() {
     const processBtn = document.getElementById('processBtn');
-    
-    if (!processBtn) {
-        console.warn('⚠️ Botón de procesar no encontrado');
-        return;
-    }
-    
     const canProcess = selectedAliasColumn !== null && selectedDescriptionColumn !== null;
     
     processBtn.disabled = !canProcess;
     
     if (canProcess) {
-        processBtn.textContent = '🚀 Generar Sinónimos';
-        processBtn.classList.remove('disabled');
-        console.log('✅ Botón de procesar habilitado');
+        processBtn.textContent = 'Generar Sinónimos';
     } else {
-        processBtn.textContent = '📋 Selecciona ambas columnas';
-        processBtn.classList.add('disabled');
-        console.log('⏳ Esperando selección de columnas');
+        processBtn.textContent = 'Selecciona ambas columnas';
     }
 }
 
@@ -415,11 +382,16 @@ function showControlsSection() {
 }
 
 function generateSynonyms() {
+    console.log('[RISOLU] 🎯 Generando sinónimos...');
+    console.log(`[RISOLU] Columnas seleccionadas - Alias: ${selectedAliasColumn}, Descripción: ${selectedDescriptionColumn}`);
+    
     if (selectedAliasColumn === null || selectedDescriptionColumn === null) {
+        console.error('[RISOLU] ❌ No se han seleccionado ambas columnas');
         alert('Por favor selecciona ambas columnas (alias y descripción)');
         return;
     }
     
+    console.log(`[RISOLU] ✅ Procesando ${excelData.length - 1} filas...`);
     showLoading();
     
     setTimeout(() => {
@@ -1809,21 +1781,13 @@ window.addEventListener('DOMContentLoaded', function() {
 // ====== FUNCIONES DE INTERFAZ DE MEMORIA ======
 
 function refreshMemoryStats() {
-    try {
-        const stats = getMemoryStats();
-        
-        const totalProductsEl = document.getElementById('memoryTotalProducts');
-        const totalSynonymsEl = document.getElementById('memoryTotalSynonyms');
-        const memorySizeEl = document.getElementById('memorySize');
-        
-        if (totalProductsEl) totalProductsEl.textContent = stats.totalProducts;
-        if (totalSynonymsEl) totalSynonymsEl.textContent = stats.totalSynonyms;
-        if (memorySizeEl) memorySizeEl.textContent = `${(stats.memorySize / 1024).toFixed(1)} KB`;
-        
-        showStatusMessage('Estadísticas de memoria actualizadas', 'success');
-    } catch (error) {
-        console.warn('Error actualizando estadísticas de memoria:', error);
-    }
+    const stats = getMemoryStats();
+    
+    document.getElementById('memoryTotalProducts').textContent = stats.totalProducts;
+    document.getElementById('memoryTotalSynonyms').textContent = stats.totalSynonyms;
+    document.getElementById('memorySize').textContent = `${(stats.memorySize / 1024).toFixed(1)} KB`;
+    
+    showStatusMessage('Estadísticas de memoria actualizadas', 'success');
 }
 
 function showMostUsedProducts() {
