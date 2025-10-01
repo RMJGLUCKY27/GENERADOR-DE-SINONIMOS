@@ -407,21 +407,28 @@ function generateSynonyms() {
                 const description = row[selectedDescriptionColumn] ? row[selectedDescriptionColumn].toString().trim() : '';
                 
                 if (alias || description) {
+                    // Generar términos de búsqueda enriquecidos
                     const synonyms = generateSynonymsForProduct(alias, description);
                     const keywords = extractKeywords(alias + ' ' + description);
+                    const enrichedSearchTerms = generateEnrichedSearchTerms(alias, description, synonyms);
                     
                     processedData.push({
                         alias: alias,
                         description: description,
                         synonyms: synonyms,
                         keywords: keywords,
+                        enrichedSearchTerms: enrichedSearchTerms, // Términos optimizados para búsqueda
+                        combinedSearch: enrichedSearchTerms.join(' '), // Texto de búsqueda completo
                         originalRow: row
                     });
                     
                     synonyms.forEach(syn => allSynonyms.add(syn));
                     keywords.forEach(kw => allKeywords.add(kw));
+                    enrichedSearchTerms.forEach(term => allKeywords.add(term));
                 }
             }
+            
+            console.log(`[RISOLU] ✅ Procesados ${processedData.length} productos con términos enriquecidos`);
             
             displayResults(processedData);
             updateStats();
@@ -434,6 +441,85 @@ function generateSynonyms() {
             console.error('Error:', error);
         }
     }, 100);
+}
+
+// Función para generar términos de búsqueda enriquecidos
+function generateEnrichedSearchTerms(alias, description, synonyms) {
+    const enrichedTerms = new Set();
+    
+    // 1. Agregar alias y descripción originales
+    if (alias) enrichedTerms.add(alias.toLowerCase());
+    if (description) {
+        // Dividir descripción en partes significativas
+        const descWords = description.toLowerCase()
+            .replace(/[^\w\s\u00C0-\u017F]/g, ' ')
+            .split(/\s+/)
+            .filter(word => word.length > 2);
+        descWords.forEach(word => enrichedTerms.add(word));
+    }
+    
+    // 2. Combinar alias con palabras clave de descripción
+    if (alias && description) {
+        const aliasClean = alias.toLowerCase().replace(/[^\w\s]/g, ' ').trim();
+        const descriptionClean = description.toLowerCase().replace(/[^\w\s\u00C0-\u017F]/g, ' ').trim();
+        
+        // Término combinado principal
+        enrichedTerms.add(`${aliasClean} ${descriptionClean}`);
+        
+        // Extraer marcas y modelos del alias
+        const aliasParts = aliasClean.split(/[\s\-_]+/);
+        const descParts = descriptionClean.split(/\s+/);
+        
+        // Combinar partes significativas
+        aliasParts.forEach(aliasPart => {
+            if (aliasPart.length > 2) {
+                descParts.slice(0, 3).forEach(descPart => {
+                    if (descPart.length > 3) {
+                        enrichedTerms.add(`${aliasPart} ${descPart}`);
+                    }
+                });
+            }
+        });
+    }
+    
+    // 3. Agregar sinónimos más relevantes (top 10)
+    if (synonyms && synonyms.length > 0) {
+        synonyms.slice(0, 10).forEach(syn => {
+            enrichedTerms.add(syn);
+            
+            // Combinar sinónimo con alias
+            if (alias) {
+                const aliasClean = alias.toLowerCase().replace(/[^\w\s]/g, ' ').trim();
+                enrichedTerms.add(`${syn} ${aliasClean}`);
+            }
+        });
+    }
+    
+    // 4. Generar variaciones sin acentos
+    const termsArray = Array.from(enrichedTerms);
+    termsArray.forEach(term => {
+        const withoutAccents = removeAccents(term);
+        if (withoutAccents !== term) {
+            enrichedTerms.add(withoutAccents);
+        }
+    });
+    
+    // 5. Filtrar y ordenar por relevancia
+    const finalTerms = Array.from(enrichedTerms)
+        .filter(term => term.length > 2 && term.length < 100)
+        .sort((a, b) => {
+            // Priorizar términos que contienen tanto alias como descripción
+            const aHasBoth = alias && description && a.includes(alias.toLowerCase()) && a.includes(description.toLowerCase().split(' ')[0]);
+            const bHasBoth = alias && description && b.includes(alias.toLowerCase()) && b.includes(description.toLowerCase().split(' ')[0]);
+            if (aHasBoth && !bHasBoth) return -1;
+            if (!aHasBoth && bHasBoth) return 1;
+            
+            // Luego por longitud (más específicos primero)
+            return b.length - a.length;
+        });
+    
+    console.log(`[RISOLU] 🔍 Generados ${finalTerms.length} términos de búsqueda para: ${alias}`);
+    return finalTerms;
 }
 
 function generateSynonymsForProduct(alias, description) {
@@ -964,23 +1050,42 @@ function displayResults(data) {
     data.forEach((item, index) => {
         const row = document.createElement('tr');
         
+        // Generar texto de búsqueda optimizado para mostrar
+        const searchText = item.enrichedSearchTerms 
+            ? item.enrichedSearchTerms.slice(0, 5).join(', ') 
+            : item.combinedSearch || `${item.alias} ${item.description}`;
+        
         row.innerHTML = `
             <td><strong>${escapeHtml(item.alias)}</strong></td>
             <td>${escapeHtml(item.description)}</td>
             <td>
-                ${item.synonyms.map(syn => `<span class="synonym-tag">${escapeHtml(syn)}</span>`).join('')}
+                <div class="search-terms-optimized" title="${escapeHtml(item.combinedSearch || '')}">
+                    <strong>🎯 Búsqueda optimizada:</strong><br>
+                    <span class="optimized-search-text">${escapeHtml(searchText)}</span>
+                </div>
+                <div class="synonyms-list">
+                    ${item.synonyms.slice(0, 8).map(syn => `<span class="synonym-tag">${escapeHtml(syn)}</span>`).join('')}
+                    ${item.synonyms.length > 8 ? `<span class="more-tags">+${item.synonyms.length - 8} más</span>` : ''}
+                </div>
             </td>
             <td>
-                ${item.keywords.map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join('')}
+                ${item.keywords.slice(0, 6).map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join('')}
+                ${item.keywords.length > 6 ? `<span class="more-tags">+${item.keywords.length - 6}</span>` : ''}
             </td>
             <td>
                 <div class="web-actions">
-                    <button class="btn-web" onclick="searchProductInRisolu('${escapeHtml(item.alias)}')"
-                            ${!webSearchEnabled ? 'disabled' : ''}>
+                    <button class="btn-web" onclick="searchProductOptimized(${index})"
+                            ${!webSearchEnabled ? 'disabled' : ''}
+                            title="Buscar con términos optimizados">
                         🔍 Buscar Web
                     </button>
-                    <button class="btn-enhance" onclick="generateEnhancedSynonyms(${index})">
-                        ⚡ Mejorar Sinónimos
+                    <button class="btn-enhance" onclick="generateEnhancedSynonyms(${index})"
+                            title="Generar más sinónimos">
+                        ⚡ Mejorar
+                    </button>
+                    <button class="btn-copy" onclick="copySearchTerms(${index})"
+                            title="Copiar términos de búsqueda">
+                        📋 Copiar
                     </button>
                 </div>
             </td>
@@ -1642,6 +1747,101 @@ function showStatusMessage(message, type = 'info') {
 }
 
 // Función searchLocalProducts eliminada - funcionalidad integrada en searchProducts
+
+// Buscar producto usando términos optimizados
+function searchProductOptimized(index) {
+    if (!processedData[index]) {
+        console.error('[RISOLU] ❌ Producto no encontrado en índice:', index);
+        return;
+    }
+    
+    const item = processedData[index];
+    
+    // Usar el término de búsqueda optimizado (primer término enriquecido o combinación)
+    let searchTerm = item.enrichedSearchTerms && item.enrichedSearchTerms.length > 0
+        ? item.enrichedSearchTerms[0]
+        : `${item.alias} ${item.description}`;
+    
+    console.log(`[RISOLU] 🔍 Búsqueda optimizada para: ${searchTerm}`);
+    
+    const searchOptions = [
+        { name: 'RISOLU', engine: 'risolu' },
+        { name: 'Grainger', engine: 'grainger' },
+        { name: 'Amazon', engine: 'amazon' },
+        { name: 'MercadoLibre', engine: 'mercadolibre' }
+    ];
+    
+    // Crear modal de opciones de búsqueda con término optimizado
+    const modal = createSearchModal(searchTerm, searchOptions);
+    document.body.appendChild(modal);
+    
+    showStatusMessage(`🎯 Búsqueda optimizada: ${searchTerm.substring(0, 50)}...`, 'info');
+}
+
+// Copiar términos de búsqueda al portapapeles
+function copySearchTerms(index) {
+    if (!processedData[index]) {
+        console.error('[RISOLU] ❌ Producto no encontrado en índice:', index);
+        return;
+    }
+    
+    const item = processedData[index];
+    
+    // Crear texto completo para copiar
+    const textToCopy = `
+═══════════════════════════════════════
+📋 TÉRMINOS DE BÚSQUEDA - RISOLU
+═══════════════════════════════════════
+
+🏷️  ALIAS: ${item.alias}
+📝  DESCRIPCIÓN: ${item.description}
+
+🎯 BÚSQUEDA OPTIMIZADA:
+${item.combinedSearch || `${item.alias} ${item.description}`}
+
+💡 TÉRMINOS ENRIQUECIDOS (Top 10):
+${item.enrichedSearchTerms ? item.enrichedSearchTerms.slice(0, 10).join(', ') : 'N/A'}
+
+🔤 SINÓNIMOS (${item.synonyms.length}):
+${item.synonyms.join(', ')}
+
+🔑 PALABRAS CLAVE (${item.keywords.length}):
+${item.keywords.join(', ')}
+
+═══════════════════════════════════════
+Generado por RISOLU Sinónimos v2.0
+═══════════════════════════════════════
+`.trim();
+    
+    // Copiar al portapapeles
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+                showStatusMessage(`📋 Términos copiados al portapapeles: ${item.alias}`, 'success');
+                console.log('[RISOLU] ✅ Términos copiados exitosamente');
+            })
+            .catch(err => {
+                console.error('[RISOLU] ❌ Error al copiar:', err);
+                // Fallback: mostrar en alert
+                prompt('Copia este texto (Ctrl+C):', textToCopy);
+            });
+    } else {
+        // Fallback para navegadores sin clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = textToCopy;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showStatusMessage(`📋 Términos copiados: ${item.alias}`, 'success');
+        } catch (err) {
+            prompt('Copia este texto (Ctrl+C):', textToCopy);
+        }
+        document.body.removeChild(textArea);
+    }
+}
 
 // ====== FUNCIONES DE CONTROL DE BÚSQUEDA WEB ======
 
